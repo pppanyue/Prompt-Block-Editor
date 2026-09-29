@@ -20,14 +20,28 @@ export type PromptDocument = {
   groups: Group[];
 };
 
+// Line breaks organize the preview; punctuation separates content for the model.
+// Add punctuation at boundaries only, preserving anything the author wrote.
+function joinPromptSegments(segments: string[], whitespace: string): string {
+  let result = segments[0] ?? '';
+
+  for (const segment of segments.slice(1)) {
+    const hasEndingPunctuation = /[,.;:!?…。！？；：，]["'’”\)\]\}]*$/u.test(result.trimEnd());
+    const separator = hasEndingPunctuation ? '' : ',';
+    result += `${separator}${whitespace}${segment}`;
+  }
+
+  return result;
+}
+
 export function assemblePrompt(document: PromptDocument, annotated = false): string {
-  return document.groups
+  const sections = document.groups
     .filter((group) => group.enabled)
     .map((group) => {
       const lines: string[] = [];
       let tags: string[] = [];
       const flush = () => {
-        if (tags.length) lines.push(tags.join(', '));
+        if (tags.length) lines.push(joinPromptSegments(tags, ' '));
         tags = [];
       };
       for (const block of group.blocks) {
@@ -40,12 +54,15 @@ export function assemblePrompt(document: PromptDocument, annotated = false): str
       }
       flush();
       if (!lines.length) return '';
-      if (annotated && group.includeHeading && group.name.trim())
-        lines.unshift(`# ${group.name.trim()}`);
-      return lines.join('\n');
+      const content = joinPromptSegments(lines, '\n');
+      if (annotated && group.includeHeading && group.name.trim()) {
+        return `# ${group.name.trim()}\n${content}`;
+      }
+      return content;
     })
-    .filter(Boolean)
-    .join('\n\n');
+    .filter(Boolean);
+
+  return joinPromptSegments(sections, '\n\n');
 }
 
 export function parseDocument(value: unknown): PromptDocument {
