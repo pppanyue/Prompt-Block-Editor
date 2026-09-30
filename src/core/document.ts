@@ -7,112 +7,125 @@ export type TextBlock = {
 
 export type Group = {
   id: string;
+  type: 'group';
   name: string;
   enabled: boolean;
   collapsed: boolean;
   includeHeading: boolean;
-  blocks: TextBlock[];
+  blocks: Block[];
 };
 
-export type PromptDocument = {
-  version: 1;
-  title: string;
-  groups: Group[];
-};
+export type Block = TextBlock | Group;
+export type PromptDocument = { version: 2; title: string; blocks: Block[] };
+export type BlockPatch = Partial<
+  Pick<TextBlock, 'text' | 'enabled'> & Pick<Group, 'name' | 'collapsed' | 'includeHeading'>
+>;
 
-// Line breaks organize the preview; punctuation separates content for the model.
-// Add punctuation at boundaries only, preserving anything the author wrote.
-function joinPromptSegments(segments: string[], whitespace: string): string {
-  let result = segments[0] ?? '';
-
-  for (const segment of segments.slice(1)) {
-    const hasEndingPunctuation = /[,.;:!?…。！？；：，]["'’”\)\]\}]*$/u.test(result.trimEnd());
-    const separator = hasEndingPunctuation ? '' : ',';
-    result += `${separator}${whitespace}${segment}`;
-  }
-
-  return result;
+function separatorAfter(text: string): string {
+  return /[,.;:!?…。！？；：，]["'’”\)\]\}]*$/u.test(text.trimEnd()) ? '' : ',';
 }
 
 export function assemblePrompt(document: PromptDocument, annotated = false): string {
-  const sections = document.groups
-    .filter((group) => group.enabled)
-    .map((group) => {
-      const lines: string[] = [];
-      let tags: string[] = [];
-      const flush = () => {
-        if (tags.length) lines.push(joinPromptSegments(tags, ' '));
-        tags = [];
-      };
-      for (const block of group.blocks) {
-        if (!block.enabled || !block.text.trim()) continue;
-        if (block.type === 'tag') tags.push(block.text.trim());
-        else {
-          flush();
-          lines.push(block.text.trim());
+  function renderBlocks(blocks: Block[], depth: number): string {
+    let output = '';
+    let previousType: Block['type'] | undefined;
+    for (const block of blocks) {
+      if (!block.enabled) continue;
+      let content: string;
+      if (block.type === 'group') {
+        content = renderBlocks(block.blocks, depth + 1);
+        if (!content) continue;
+        if (annotated && block.includeHeading && block.name.trim()) {
+          content = `${'#'.repeat(depth + 1)} ${block.name.trim()}\n${content}`;
         }
+      } else {
+        content = block.text.trim();
+        if (!content) continue;
       }
-      flush();
-      if (!lines.length) return '';
-      const content = joinPromptSegments(lines, '\n');
-      if (annotated && group.includeHeading && group.name.trim()) {
-        return `# ${group.name.trim()}\n${content}`;
+      if (output) {
+        const whitespace =
+          previousType === 'group' || block.type === 'group'
+            ? '\n\n'
+            : previousType === 'tag' && block.type === 'tag'
+              ? ' '
+              : '\n';
+        output += separatorAfter(output) + whitespace;
       }
-      return content;
-    })
-    .filter(Boolean);
-
-  return joinPromptSegments(sections, '\n\n');
+      output += content;
+      previousType = block.type;
+    }
+    return output;
+  }
+  return renderBlocks(document.blocks, 0);
 }
 
+// Validate and copy input instead of trusting JSON's shape. v1 groups migrate in place
+// in the tree, preserving IDs, order, text, and all enabled/presentation settings.
 export function parseDocument(value: unknown): PromptDocument {
-  const isObject = (v: unknown): v is Record<string, unknown> =>
-    typeof v === 'object' && v !== null;
+  const isObject = (item: unknown): item is Record<string, unknown> =>
+    typeof item === 'object' && item !== null;
   if (
     !isObject(value) ||
-    value.version !== 1 ||
-    typeof value.title !== 'string' ||
-    !Array.isArray(value.groups)
+    ![1, 2].includes(Number(value.version)) ||
+    typeof value.title !== 'string'
   ) {
     throw new Error('This file is not a supported Prompt Block Editor document.');
   }
+  const legacy = value.version === 1;
+  if (value.version !== 1 && value.version !== 2) throw new Error('Unsupported document version.');
+  const roots = legacy ? value.groups : value.blocks;
+  if (!Array.isArray(roots)) throw new Error('Invalid document blocks.');
   const ids = new Set<string>();
-  const validId = (v: unknown) => {
-    if (typeof v !== 'string' || !v || ids.has(v)) return false;
-    ids.add(v);
-    return true;
-  };
-  for (const group of value.groups) {
+  function readBlock(item: unknown, depth: number, legacyGroup = false): Block {
+    if (depth > 100) throw new Error('Document nesting exceeds the supported import depth (100).');
     if (
-      !isObject(group) ||
-      !validId(group.id) ||
-      typeof group.name !== 'string' ||
-      typeof group.enabled !== 'boolean' ||
-      typeof group.collapsed !== 'boolean' ||
-      typeof group.includeHeading !== 'boolean' ||
-      !Array.isArray(group.blocks)
-    )
-      throw new Error('Invalid group in document.');
-    for (const block of group.blocks) {
-      if (
-        !isObject(block) ||
-        !validId(block.id) ||
-        !['tag', 'description'].includes(String(block.type)) ||
-        typeof block.text !== 'string' ||
-        typeof block.enabled !== 'boolean'
-      )
-        throw new Error('Invalid block in document.');
+      !isObject(item) ||
+      typeof item.id !== 'string' ||
+      !item.id ||
+      ids.has(item.id) ||
+      typeof item.enabled !== 'boolean'
+    ) {
+      throw new Error('Invalid block or duplicate ID in document.');
     }
+    ids.add(item.id);
+    const base = { id: item.id, enabled: item.enabled };
+    if (legacyGroup || item.type === 'group') {
+      if (
+        typeof item.name !== 'string' ||
+        typeof item.collapsed !== 'boolean' ||
+        typeof item.includeHeading !== 'boolean' ||
+        !Array.isArray(item.blocks)
+      ) {
+        throw new Error('Invalid group in document.');
+      }
+      return {
+        ...base,
+        type: 'group',
+        name: item.name,
+        collapsed: item.collapsed,
+        includeHeading: item.includeHeading,
+        blocks: item.blocks.map((child) => readBlock(child, depth + 1)),
+      };
+    }
+    if ((item.type !== 'tag' && item.type !== 'description') || typeof item.text !== 'string') {
+      throw new Error('Invalid text block in document.');
+    }
+    return { ...base, type: item.type, text: item.text };
   }
-  return value as PromptDocument;
+  return {
+    version: 2,
+    title: value.title,
+    blocks: roots.map((item) => readBlock(item, 0, legacy)),
+  };
 }
 
 export const starterDocument: PromptDocument = {
-  version: 1,
+  version: 2,
   title: 'A quiet morning',
-  groups: [
+  blocks: [
     {
       id: 'subject',
+      type: 'group',
       name: 'Subject & setting',
       enabled: true,
       collapsed: false,
@@ -130,6 +143,7 @@ export const starterDocument: PromptDocument = {
     },
     {
       id: 'style',
+      type: 'group',
       name: 'Light & style',
       enabled: true,
       collapsed: false,
