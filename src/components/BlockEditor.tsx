@@ -7,7 +7,8 @@ type BlockEditorProps = {
   onUpdate: (patch: Partial<TextBlock>) => void;
   onRemove: () => void;
   inheritedDisabled: boolean;
-  tools: ReactNode;
+  movementControls: ReactNode;
+  movementControlsToggle: ReactNode;
 };
 
 export function BlockEditor({
@@ -15,7 +16,8 @@ export function BlockEditor({
   onUpdate,
   onRemove,
   inheritedDisabled,
-  tools,
+  movementControls,
+  movementControlsToggle,
 }: BlockEditorProps) {
   return (
     <SortableItem id={block.id} label={block.type}>
@@ -29,6 +31,7 @@ export function BlockEditor({
             />
             {block.type === 'tag' ? 'TAG' : 'DESCRIPTION'}
           </label>
+          {movementControlsToggle}
           <button className="quiet" aria-label={`Delete ${block.type}`} onClick={onRemove}>
             ×
           </button>
@@ -49,7 +52,7 @@ export function BlockEditor({
             onChange={(event) => onUpdate({ text: event.target.value })}
           />
         )}
-        {tools}
+        {movementControls}
       </div>
     </SortableItem>
   );

@@ -9,7 +9,8 @@ type GroupEditorProps = {
   onUpdate: (patch: BlockPatch) => void;
   onRemove: () => void;
   onUngroup: () => void;
-  tools: ReactNode;
+  movementControls: ReactNode;
+  movementControlsToggle: ReactNode;
   children: ReactNode;
 };
 
@@ -19,7 +20,8 @@ export function GroupEditor({
   onUpdate,
   onRemove,
   onUngroup,
-  tools,
+  movementControls,
+  movementControlsToggle,
   children,
 }: GroupEditorProps) {
   return (
@@ -38,6 +40,7 @@ export function GroupEditor({
             value={group.name}
             onChange={(event) => onUpdate({ name: event.target.value })}
           />
+          {movementControlsToggle}
           <button
             aria-label={`${group.collapsed ? 'Expand' : 'Collapse'} ${group.name}`}
             onClick={() => onUpdate({ collapsed: !group.collapsed })}
@@ -55,7 +58,7 @@ export function GroupEditor({
             Ungroup
           </button>
         </div>
-        {tools}
+        {movementControls}
         {!group.collapsed && (
           <label className="heading-option group-heading-option">
             <input

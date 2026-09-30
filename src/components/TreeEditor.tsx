@@ -34,6 +34,15 @@ function destinations(blocks: Block[], path = ''): Destination[] {
 
 export function TreeEditor(props: TreeEditorProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [hiddenMovement, setHiddenMovement] = useState<Set<string>>(() => new Set());
+  function toggleMovement(id: string) {
+    setHiddenMovement((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const targets: Destination[] = [
     { id: null, label: 'Document (top level)' },
@@ -76,6 +85,8 @@ export function TreeEditor(props: TreeEditorProps) {
           inheritedDisabled={false}
           activeId={activeId}
           targets={targets}
+          hiddenMovement={hiddenMovement}
+          onToggleMovement={toggleMovement}
         />
       </DndContext>
       <p className="hint">
@@ -93,6 +104,8 @@ type BlockListProps = TreeEditorProps & {
   inheritedDisabled: boolean;
   activeId: string | null;
   targets: Destination[];
+  hiddenMovement: Set<string>;
+  onToggleMovement: (id: string) => void;
 };
 
 function BlockList(props: BlockListProps) {
@@ -119,8 +132,20 @@ function BlockList(props: BlockListProps) {
     <div className="block-list">
       {items.map((block, index) => {
         const label = block.type === 'group' ? block.name : block.text || block.type;
-        const tools = (
-          <div className="placement-tools">
+        const movementVisible = !props.hiddenMovement.has(block.id);
+        const movementControlsToggle = (
+          <button
+            className="quiet movement-toggle"
+            aria-label={`${movementVisible ? 'Hide' : 'Show'} movement controls for ${label}`}
+            aria-expanded={movementVisible}
+            title={`${movementVisible ? 'Hide' : 'Show'} movement controls`}
+            onClick={() => props.onToggleMovement(block.id)}
+          >
+            ↕
+          </button>
+        );
+        const movementControls = (
+          <div className="movement-controls">
             <button
               aria-label={`Move ${label} up`}
               disabled={index === 0}
@@ -163,7 +188,8 @@ function BlockList(props: BlockListProps) {
               <GroupEditor
                 group={block}
                 inheritedDisabled={inheritedDisabled}
-                tools={tools}
+                movementControls={movementVisible ? movementControls : null}
+                movementControlsToggle={movementControlsToggle}
                 onUpdate={(patch) => props.onUpdate(block.id, patch)}
                 onRemove={() => props.onRemove(block.id)}
                 onUngroup={() => props.onUngroup(block.id)}
@@ -189,7 +215,8 @@ function BlockList(props: BlockListProps) {
             ) : (
               <BlockEditor
                 block={block}
-                tools={tools}
+                movementControls={movementVisible ? movementControls : null}
+                movementControlsToggle={movementControlsToggle}
                 inheritedDisabled={inheritedDisabled}
                 onUpdate={(patch) => props.onUpdate(block.id, patch)}
                 onRemove={() => props.onRemove(block.id)}
