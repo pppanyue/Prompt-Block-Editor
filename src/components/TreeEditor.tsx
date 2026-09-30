@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import {
   DndContext,
   PointerSensor,
@@ -16,6 +16,10 @@ import { DropSlot } from './SortableItem';
 
 export type TreeEditorProps = {
   blocks: Block[];
+  twoColumns: boolean;
+  layoutOrder: 'rows' | 'columns';
+  movementVisibility: Record<string, boolean>;
+  onToggleMovement: (id: string) => void;
   onAdd: (parentId: string | null, type: Block['type']) => void;
   onUpdate: (id: string, patch: BlockPatch) => void;
   onRemove: (id: string) => void;
@@ -34,15 +38,6 @@ function destinations(blocks: Block[], path = ''): Destination[] {
 
 export function TreeEditor(props: TreeEditorProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [hiddenMovement, setHiddenMovement] = useState<Set<string>>(() => new Set());
-  function toggleMovement(id: string) {
-    setHiddenMovement((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const targets: Destination[] = [
     { id: null, label: 'Document (top level)' },
@@ -85,8 +80,6 @@ export function TreeEditor(props: TreeEditorProps) {
           inheritedDisabled={false}
           activeId={activeId}
           targets={targets}
-          hiddenMovement={hiddenMovement}
-          onToggleMovement={toggleMovement}
         />
       </DndContext>
       <p className="hint">
@@ -104,8 +97,6 @@ type BlockListProps = TreeEditorProps & {
   inheritedDisabled: boolean;
   activeId: string | null;
   targets: Destination[];
-  hiddenMovement: Set<string>;
-  onToggleMovement: (id: string) => void;
 };
 
 function BlockList(props: BlockListProps) {
@@ -129,10 +120,12 @@ function BlockList(props: BlockListProps) {
     props.onMove(id, targetId, count);
   }
   return (
-    <div className="block-list">
+    <div
+      className={`block-list ${parentId !== null && props.twoColumns ? `two-columns flow-${props.layoutOrder}` : ''}`}
+    >
       {items.map((block, index) => {
         const label = block.type === 'group' ? block.name : block.text || block.type;
-        const movementVisible = !props.hiddenMovement.has(block.id);
+        const movementVisible = props.movementVisibility[block.id] ?? true;
         const movementControlsToggle = (
           <button
             className="quiet movement-toggle"
@@ -182,7 +175,10 @@ function BlockList(props: BlockListProps) {
           </div>
         );
         return (
-          <Fragment key={block.id}>
+          <div
+            className={`block-entry ${block.type === 'group' ? 'group-entry' : ''}`}
+            key={block.id}
+          >
             {slot(index, `Insert before ${label}`)}
             {block.type === 'group' ? (
               <GroupEditor
@@ -222,7 +218,7 @@ function BlockList(props: BlockListProps) {
                 onRemove={() => props.onRemove(block.id)}
               />
             )}
-          </Fragment>
+          </div>
         );
       })}
       {slot(

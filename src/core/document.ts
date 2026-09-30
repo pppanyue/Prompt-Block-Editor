@@ -25,7 +25,12 @@ function separatorAfter(text: string): string {
   return /[,.;:!?…。！？；：，]["'’”\)\]\}]*$/u.test(text.trimEnd()) ? '' : ',';
 }
 
-export function assemblePrompt(document: PromptDocument, annotated = false): string {
+export function assemblePrompt(
+  document: PromptDocument,
+  annotated = false,
+  commentPrefix = '#',
+  repeatPrefix = true,
+): string {
   function renderBlocks(blocks: Block[], depth: number): string {
     let output = '';
     let previousType: Block['type'] | undefined;
@@ -36,7 +41,8 @@ export function assemblePrompt(document: PromptDocument, annotated = false): str
         content = renderBlocks(block.blocks, depth + 1);
         if (!content) continue;
         if (annotated && block.includeHeading && block.name.trim()) {
-          content = `${'#'.repeat(depth + 1)} ${block.name.trim()}\n${content}`;
+          const prefix = commentPrefix.trim().repeat(repeatPrefix ? depth + 1 : 1);
+          content = `${prefix ? prefix + ' ' : ''}${block.name.trim()}\n${content}`;
         }
       } else {
         content = block.text.trim();

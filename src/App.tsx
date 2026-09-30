@@ -1,3 +1,5 @@
+import { SettingsPanel } from './components/SettingsPanel';
+import { useEditorSettings } from './hooks/useEditorSettings';
 import { DocumentToolbar } from './components/DocumentToolbar';
 import { TreeEditor } from './components/TreeEditor';
 import { PromptPreview } from './components/PromptPreview';
@@ -6,6 +8,7 @@ import { usePromptDocument } from './hooks/usePromptDocument';
 export default function App() {
   const editor = usePromptDocument();
   const { document } = editor;
+  const preferences = useEditorSettings(document.blocks);
 
   return (
     <div className="app">
@@ -20,6 +23,11 @@ export default function App() {
         <span className="version">LOCAL WORKSPACE · v0.1</span>
       </header>
       <main>
+        <SettingsPanel
+          settings={preferences.settings}
+          onChange={preferences.setSettings}
+          onSetCurrentMovement={preferences.setCurrentMovement}
+        />
         <DocumentToolbar
           title={document.title}
           canUndo={editor.canUndo}
@@ -33,13 +41,22 @@ export default function App() {
         <div className="workspace">
           <TreeEditor
             blocks={document.blocks}
+            twoColumns={preferences.settings.twoColumns}
+            layoutOrder={preferences.settings.layoutOrder}
+            movementVisibility={preferences.movementVisibility}
+            onToggleMovement={preferences.toggleMovement}
             onAdd={editor.addBlock}
             onUpdate={editor.updateBlock}
             onRemove={editor.removeBlock}
             onMove={editor.moveBlock}
             onUngroup={editor.ungroupBlock}
           />
-          <PromptPreview document={document} onStatus={editor.setStatus} />
+          <PromptPreview
+            document={document}
+            onStatus={editor.setStatus}
+            commentPrefix={preferences.settings.commentPrefix}
+            repeatPrefix={preferences.settings.repeatPrefix}
+          />
         </div>
         <footer role="status">{editor.status}</footer>
       </main>

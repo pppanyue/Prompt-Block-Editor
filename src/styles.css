@@ -447,3 +447,82 @@ footer {
 .editor {
   overflow-x: auto;
 }
+
+.settings-panel {
+  margin-bottom: 24px;
+  border: 1px solid #d9ded7;
+  border-radius: 10px;
+  background: #fcfcf9;
+  padding: 12px 16px;
+}
+.settings-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.settings-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+}
+.settings-content fieldset {
+  flex: 1 1 240px;
+  min-width: 0;
+  border: 1px solid #d9ded7;
+  border-radius: 8px;
+}
+.settings-content label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+.settings-content input:not([type='checkbox']) {
+  width: 100px;
+  padding: 6px;
+}
+.settings-content table {
+  width: 100%;
+  font-size: 12px;
+  border-spacing: 6px;
+}
+.settings-content th {
+  text-align: left;
+}
+.settings-content button {
+  padding: 4px 7px;
+}
+.group-body {
+  container-type: inline-size;
+}
+.block-entry {
+  min-width: 0;
+}
+@container (min-width: 440px) {
+  .block-list.two-columns.flow-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 10px;
+    align-items: start;
+  }
+  .two-columns > .group-entry,
+  .two-columns > .drop-slot,
+  .two-columns > .empty,
+  .two-columns > .add-buttons {
+    grid-column: 1 / -1;
+  }
+  .block-list.two-columns.flow-columns {
+    column-count: 2;
+    column-gap: 10px;
+    column-fill: balance;
+  }
+  .flow-columns > .block-entry {
+    break-inside: avoid;
+  }
+  .flow-columns > .group-entry,
+  .flow-columns > .drop-slot,
+  .flow-columns > .empty,
+  .flow-columns > .add-buttons {
+    column-span: all;
+  }
+}

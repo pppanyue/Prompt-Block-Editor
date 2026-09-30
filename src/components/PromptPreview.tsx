@@ -3,12 +3,19 @@ import { assemblePrompt, type PromptDocument } from '../core/document';
 
 type PromptPreviewProps = {
   document: PromptDocument;
+  commentPrefix: string;
+  repeatPrefix: boolean;
   onStatus: (message: string) => void;
 };
 
-export function PromptPreview({ document, onStatus }: PromptPreviewProps) {
+export function PromptPreview({
+  document,
+  onStatus,
+  commentPrefix,
+  repeatPrefix,
+}: PromptPreviewProps) {
   const [annotated, setAnnotated] = useState(false);
-  const output = assemblePrompt(document, annotated);
+  const output = assemblePrompt(document, annotated, commentPrefix, repeatPrefix);
 
   async function copyPrompt() {
     try {
