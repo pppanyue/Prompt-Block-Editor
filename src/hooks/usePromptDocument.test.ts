@@ -1,3 +1,4 @@
+import { findBlock } from '../core/tree';
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -23,7 +24,7 @@ afterEach(() => {
 describe('document editing and persistence', () => {
   it('persists edits, undo and redo, and restores the document on remount', () => {
     const { result, unmount } = renderHook(usePromptDocument);
-    act(() => result.current.updateBlock('subject', 'scene', { text: 'A new scene.' }));
+    act(() => result.current.updateBlock('scene', { text: 'A new scene.' }));
     expect(assemblePrompt(result.current.document)).toContain('A new scene.');
     act(() => result.current.undo());
     expect(result.current.document).toEqual(starterDocument);
@@ -38,14 +39,14 @@ describe('document editing and persistence', () => {
 
   it('reorders content and excludes disabled blocks and groups', () => {
     const { result } = renderHook(usePromptDocument);
-    act(() => result.current.reorderGroups('style', 'subject'));
-    act(() => result.current.reorderBlocks('style', 'film', 'light'));
+    act(() => result.current.moveBlock('style', null, 0));
+    act(() => result.current.moveBlock('film', 'style', 0));
     expect(assemblePrompt(result.current.document)).toMatch(
       /^35mm film photography, warm morning light/,
     );
-    act(() => result.current.updateBlock('style', 'film', { enabled: false }));
+    act(() => result.current.updateBlock('film', { enabled: false }));
     expect(assemblePrompt(result.current.document)).not.toContain('35mm film photography');
-    act(() => result.current.updateGroup('style', { enabled: false }));
+    act(() => result.current.updateBlock('style', { enabled: false }));
     expect(assemblePrompt(result.current.document)).not.toContain('warm morning light');
     act(() => result.current.undo());
     expect(assemblePrompt(result.current.document)).toContain('warm morning light');
@@ -53,17 +54,19 @@ describe('document editing and persistence', () => {
 
   it('allows removing and restoring newly added groups and blocks', () => {
     const { result } = renderHook(usePromptDocument);
-    act(() => result.current.addGroup());
-    const groupId = result.current.document.groups.at(-1)!.id;
+    act(() => result.current.addBlock(null, 'group'));
+    const groupId = result.current.document.blocks.at(-1)!.id;
     act(() => result.current.addBlock(groupId, 'description'));
-    const blockId = result.current.document.groups.at(-1)!.blocks[0].id;
-    act(() => result.current.updateBlock(groupId, blockId, { text: 'New description.' }));
-    act(() => result.current.removeBlock(groupId, blockId));
+    const blockId = (
+      findBlock(result.current.document.blocks, groupId) as import('../core/document').Group
+    ).blocks[0].id;
+    act(() => result.current.updateBlock(blockId, { text: 'New description.' }));
+    act(() => result.current.removeBlock(blockId));
     expect(assemblePrompt(result.current.document)).not.toContain('New description.');
     act(() => result.current.undo());
     expect(assemblePrompt(result.current.document)).toContain('New description.');
-    act(() => result.current.removeGroup(groupId));
-    expect(result.current.document.groups).toHaveLength(2);
+    act(() => result.current.removeBlock(groupId));
+    expect(result.current.document.blocks).toHaveLength(2);
   });
 
   it('round-trips an exported document through import and supports undo', async () => {
@@ -102,4 +105,37 @@ describe('document editing and persistence', () => {
     act(() => result.current.updateTitle('Recovered document'));
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).title).toBe('Recovered document');
   });
+});
+
+it('undoes subtree moves, ungrouping, and deletion as whole operations', () => {
+  const { result } = renderHook(usePromptDocument);
+  const original = result.current.document;
+  act(() => result.current.moveBlock('style', 'subject', 0));
+  const nested = result.current.document;
+  expect(
+    (findBlock(nested.blocks, 'subject') as import('../core/document').Group).blocks[0].id,
+  ).toBe('style');
+  act(() => result.current.undo());
+  expect(result.current.document).toEqual(original);
+  act(() => result.current.redo());
+  expect(result.current.document).toEqual(nested);
+  act(() => result.current.ungroupBlock('subject'));
+  expect(findBlock(result.current.document.blocks, 'subject')).toBeUndefined();
+  act(() => result.current.undo());
+  expect(result.current.document).toEqual(nested);
+  act(() => result.current.removeBlock('subject'));
+  expect(result.current.document.blocks).toEqual([]);
+  act(() => result.current.undo());
+  expect(result.current.document).toEqual(nested);
+});
+
+it('loads legacy autosave and writes v2 only after an edit', () => {
+  const legacy = { version: 1, title: 'Legacy saved', groups: starterDocument.blocks };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+  const { result } = renderHook(usePromptDocument);
+  expect(result.current.document.version).toBe(2);
+  expect(result.current.document.title).toBe('Legacy saved');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).version).toBe(1);
+  act(() => result.current.updateTitle('Edited legacy'));
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).version).toBe(2);
 });

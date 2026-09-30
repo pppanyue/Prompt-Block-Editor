@@ -1,11 +1,11 @@
 import { useEffect, useReducer, useState } from 'react';
-import { arrayMove } from '@dnd-kit/sortable';
+import * as tree from '../core/tree';
 import {
   parseDocument,
   starterDocument,
-  type Group,
   type PromptDocument,
-  type TextBlock,
+  type Block,
+  type BlockPatch,
 } from '../core/document';
 
 const STORAGE_KEY = 'prompt-block-editor.document.v1';
@@ -44,7 +44,7 @@ function historyReducer(state: History, action: Action): History {
 }
 
 function loadInitialHistory(): History {
-  let present = structuredClone(starterDocument);
+  let present: PromptDocument = structuredClone(starterDocument);
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) present = parseDocument(JSON.parse(saved));
@@ -78,68 +78,47 @@ export function usePromptDocument() {
     edit({ ...document, title });
   }
 
-  function updateGroup(groupId: string, patch: Partial<Group>) {
+  function updateBlock(blockId: string, patch: BlockPatch) {
+    if (!tree.findBlock(document.blocks, blockId)) return;
+    edit({ ...document, blocks: tree.updateBlock(document.blocks, blockId, patch) });
+  }
+
+  function addBlock(parentId: string | null, type: Block['type']) {
+    const parent = parentId === null ? null : tree.findBlock(document.blocks, parentId);
+    if (parentId !== null && parent?.type !== 'group') return;
+    const base = { id: crypto.randomUUID(), enabled: true };
+    const block: Block =
+      type === 'group'
+        ? {
+            ...base,
+            type,
+            name: 'Untitled group',
+            collapsed: false,
+            includeHeading: true,
+            blocks: [],
+          }
+        : { ...base, type, text: '' };
+    const siblings = parent?.type === 'group' ? parent.blocks : document.blocks;
     edit({
       ...document,
-      groups: document.groups.map((group) =>
-        group.id === groupId ? { ...group, ...patch } : group,
-      ),
+      blocks: tree.insertBlock(document.blocks, parentId, siblings.length, block),
     });
   }
 
-  function addGroup() {
-    const group: Group = {
-      id: crypto.randomUUID(),
-      name: 'Untitled group',
-      enabled: true,
-      collapsed: false,
-      includeHeading: true,
-      blocks: [],
-    };
-    edit({ ...document, groups: [...document.groups, group] });
+  function removeBlock(blockId: string) {
+    if (!tree.findBlock(document.blocks, blockId)) return;
+    edit({ ...document, blocks: tree.removeBlock(document.blocks, blockId) });
   }
 
-  function removeGroup(groupId: string) {
-    edit({ ...document, groups: document.groups.filter((group) => group.id !== groupId) });
+  function moveBlock(blockId: string, parentId: string | null, index: number) {
+    const blocks = tree.moveBlock(document.blocks, blockId, parentId, index);
+    if (blocks !== document.blocks) edit({ ...document, blocks });
   }
 
-  function reorderGroups(activeId: string, overId: string) {
-    const from = document.groups.findIndex((group) => group.id === activeId);
-    const to = document.groups.findIndex((group) => group.id === overId);
-    if (from < 0 || to < 0 || from === to) return;
-    edit({ ...document, groups: arrayMove(document.groups, from, to) });
+  function ungroupBlock(blockId: string) {
+    if (tree.findBlock(document.blocks, blockId)?.type !== 'group') return;
+    edit({ ...document, blocks: tree.ungroupBlock(document.blocks, blockId) });
   }
-
-  function addBlock(groupId: string, type: TextBlock['type']) {
-    const group = document.groups.find((group) => group.id === groupId);
-    if (!group) return;
-    const block: TextBlock = { id: crypto.randomUUID(), type, text: '', enabled: true };
-    updateGroup(groupId, { blocks: [...group.blocks, block] });
-  }
-
-  function updateBlock(groupId: string, blockId: string, patch: Partial<TextBlock>) {
-    const group = document.groups.find((group) => group.id === groupId);
-    if (!group) return;
-    updateGroup(groupId, {
-      blocks: group.blocks.map((block) => (block.id === blockId ? { ...block, ...patch } : block)),
-    });
-  }
-
-  function removeBlock(groupId: string, blockId: string) {
-    const group = document.groups.find((group) => group.id === groupId);
-    if (!group) return;
-    updateGroup(groupId, { blocks: group.blocks.filter((block) => block.id !== blockId) });
-  }
-
-  function reorderBlocks(groupId: string, activeId: string, overId: string) {
-    const group = document.groups.find((group) => group.id === groupId);
-    if (!group) return;
-    const from = group.blocks.findIndex((block) => block.id === activeId);
-    const to = group.blocks.findIndex((block) => block.id === overId);
-    if (from < 0 || to < 0 || from === to) return;
-    updateGroup(groupId, { blocks: arrayMove(group.blocks, from, to) });
-  }
-
   async function importDocument(file: File) {
     try {
       edit(parseDocument(JSON.parse(await file.text())));
@@ -168,14 +147,11 @@ export function usePromptDocument() {
     undo: () => dispatch({ type: 'undo' }),
     redo: () => dispatch({ type: 'redo' }),
     updateTitle,
-    updateGroup,
-    addGroup,
-    removeGroup,
-    reorderGroups,
     addBlock,
     updateBlock,
     removeBlock,
-    reorderBlocks,
+    moveBlock,
+    ungroupBlock,
     importDocument,
     exportDocument,
   };
