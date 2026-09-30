@@ -361,3 +361,83 @@ footer {
     min-height: 220px;
   }
 }
+
+/* Recursive editor: indentation comes from each group's body, not fixed levels. */
+.group-body {
+  padding: 0 12px 12px;
+}
+.block-list {
+  min-width: 0;
+}
+.block-list .sortable {
+  margin-bottom: 0;
+}
+.group-details {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #7a877d;
+}
+.group-details button {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 3px 6px;
+}
+.placement-tools {
+  display: flex;
+  gap: 5px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+.group > .placement-tools {
+  padding: 0 12px 8px;
+}
+.placement-tools button {
+  padding: 3px 8px;
+}
+.placement-tools select {
+  min-width: 0;
+  max-width: 180px;
+  color: inherit;
+  background: #fff;
+  border: 1px solid #d9ded7;
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+.group-heading-option {
+  padding: 0 12px;
+}
+.inherited-status {
+  display: block;
+  color: #7a877d;
+  margin-bottom: 5px;
+}
+.drop-slot {
+  height: 12px;
+  margin-left: 21px;
+  border-radius: 5px;
+}
+.drop-slot.available {
+  min-height: 28px;
+  height: auto;
+  padding: 5px;
+  border: 1px dashed #7ca387;
+  font-size: 11px;
+  color: #548868;
+}
+.drop-slot.over {
+  background: #d3ead8;
+  border: 2px solid #315e45;
+}
+.tree-dragging .dragging {
+  pointer-events: none;
+}
+.add-buttons {
+  flex-wrap: wrap;
+}
+.editor {
+  overflow-x: auto;
+}
