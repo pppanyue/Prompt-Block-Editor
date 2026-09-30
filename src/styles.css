@@ -210,6 +210,12 @@ main {
   letter-spacing: 1px;
   color: #788e7e;
 }
+.block-meta .movement-toggle {
+  margin-left: auto;
+}
+.movement-toggle[aria-expanded='true'] {
+  color: #315e45;
+}
 .quiet {
   border: 0;
   background: transparent;
@@ -386,19 +392,19 @@ footer {
   font-size: 11px;
   padding: 3px 6px;
 }
-.placement-tools {
+.movement-controls {
   display: flex;
   gap: 5px;
   padding: 6px 0;
   flex-wrap: wrap;
 }
-.group > .placement-tools {
+.group > .movement-controls {
   padding: 0 12px 8px;
 }
-.placement-tools button {
+.movement-controls button {
   padding: 3px 8px;
 }
-.placement-tools select {
+.movement-controls select {
   min-width: 0;
   max-width: 180px;
   color: inherit;
