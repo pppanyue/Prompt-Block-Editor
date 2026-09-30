@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { type TextBlock } from '../core/document';
 import { SortableItem } from './SortableItem';
 
@@ -5,9 +6,17 @@ type BlockEditorProps = {
   block: TextBlock;
   onUpdate: (patch: Partial<TextBlock>) => void;
   onRemove: () => void;
+  inheritedDisabled: boolean;
+  tools: ReactNode;
 };
 
-export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
+export function BlockEditor({
+  block,
+  onUpdate,
+  onRemove,
+  inheritedDisabled,
+  tools,
+}: BlockEditorProps) {
   return (
     <SortableItem id={block.id} label={block.type}>
       <div className={`block ${block.enabled ? '' : 'muted'}`}>
@@ -24,6 +33,7 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
             ×
           </button>
         </div>
+        {inheritedDisabled && <small className="inherited-status">Excluded by parent</small>}
         {block.type === 'tag' ? (
           <input
             aria-label="Tag text"
@@ -39,6 +49,7 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
             onChange={(event) => onUpdate({ text: event.target.value })}
           />
         )}
+        {tools}
       </div>
     </SortableItem>
   );
