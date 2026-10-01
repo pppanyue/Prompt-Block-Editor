@@ -171,12 +171,6 @@ main {
   min-width: 0;
   flex: 1;
 }
-.group-header button {
-  border: 0;
-  background: transparent;
-  padding: 2px 7px;
-  font-size: 19px;
-}
 .group-body {
   padding: 14px;
 }
@@ -527,7 +521,7 @@ footer {
   }
 }
 
-.group-header .group-add-control {
+.group-header select.group-add-control {
   font: inherit;
   font-size: 11px;
   padding: 4px 6px;
@@ -536,12 +530,13 @@ footer {
   background: #fff;
   color: inherit;
   max-width: 110px;
+  height: 28px;
 }
 .settings-content select {
   min-width: 0;
   max-width: 100%;
 }
-.group-header .add-buttons-toggle {
+.group-header button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -553,11 +548,25 @@ footer {
   background: transparent;
   color: #7a877d;
 }
-.group-header .add-buttons-toggle[aria-expanded='true'] {
+.group-header .add-buttons-toggle[aria-expanded='true'],
+.group-header .movement-toggle[aria-expanded='true'] {
   color: #315e45;
   background: #dfe9df;
 }
-.group-header .add-buttons-toggle:hover {
+.group-header button:hover,
+.group-header select.group-add-control:hover {
   background: #d3e2d5;
   color: #315e45;
+}
+
+.group-header button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.group-header .group-delete-control:hover {
+  color: #a34343;
+  background: #f2dddd;
+}
+.group-header > input[type='checkbox'] {
+  flex-shrink: 0;
 }

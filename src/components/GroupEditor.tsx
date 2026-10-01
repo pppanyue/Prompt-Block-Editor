@@ -1,3 +1,4 @@
+import { GroupToolbarIcon } from './GroupToolbarIcon';
 import { type ReactNode } from 'react';
 import { type Group, type BlockPatch } from '../core/document';
 import { summarizeBlocks } from '../core/tree';
@@ -46,12 +47,20 @@ export function GroupEditor({
           {movementControlsToggle}
           <button
             aria-label={`${group.collapsed ? 'Expand' : 'Collapse'} ${group.name}`}
+            title={group.collapsed ? 'Expand group' : 'Collapse group'}
+            aria-expanded={!group.collapsed}
+            className="group-collapse-control"
             onClick={() => onUpdate({ collapsed: !group.collapsed })}
           >
-            {group.collapsed ? '+' : '−'}
+            <GroupToolbarIcon name={group.collapsed ? 'expand' : 'collapse'} />
           </button>
-          <button className="quiet" aria-label={`Delete ${group.name}`} onClick={onRemove}>
-            ×
+          <button
+            className="group-delete-control"
+            title="Delete group"
+            aria-label={`Delete ${group.name}`}
+            onClick={onRemove}
+          >
+            <GroupToolbarIcon name="delete" />
           </button>
         </div>
         <div className="group-details">

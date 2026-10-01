@@ -1,3 +1,4 @@
+import { GroupToolbarIcon } from './GroupToolbarIcon';
 import { useState } from 'react';
 import {
   DndContext,
@@ -148,7 +149,7 @@ function BlockList(props: BlockListProps) {
             title={`${movementVisible ? 'Hide' : 'Show'} movement controls`}
             onClick={() => props.onToggleMovement(block.id)}
           >
-            ↕
+            {block.type === 'group' ? <GroupToolbarIcon name="move" /> : '↕'}
           </button>
         );
         const movementControls = (
@@ -224,20 +225,7 @@ function BlockList(props: BlockListProps) {
                       title={`${props.hiddenAddButtons.has(block.id) ? 'Show' : 'Hide'} add buttons`}
                       onClick={() => props.onToggleAddButtons(block.id)}
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <rect x="3" y="4" width="18" height="16" rx="3" />
-                        <path d="M3 14h18M9 14v6M15 14v6M12 7v4M10 9h4" />
-                      </svg>
+                      <GroupToolbarIcon name="add" />
                     </button>
                   )
                 }
