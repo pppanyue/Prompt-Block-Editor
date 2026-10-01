@@ -6,6 +6,7 @@ export type EditorSettings = {
   repeatPrefix: boolean;
   twoColumns: boolean;
   layoutOrder: 'rows' | 'columns';
+  groupAddControl: 'toggle' | 'dropdown';
   defaultMovement: Record<Block['type'], boolean>;
 };
 const defaults: EditorSettings = {
@@ -13,6 +14,7 @@ const defaults: EditorSettings = {
   repeatPrefix: true,
   twoColumns: false,
   layoutOrder: 'rows',
+  groupAddControl: 'toggle',
   defaultMovement: { tag: true, description: true, group: true },
 };
 const storageKey = 'prompt-block-editor.settings.v1';
@@ -26,6 +28,7 @@ function loadSettings(): EditorSettings {
         typeof value?.repeatPrefix === 'boolean' ? value.repeatPrefix : defaults.repeatPrefix,
       twoColumns: typeof value?.twoColumns === 'boolean' ? value.twoColumns : defaults.twoColumns,
       layoutOrder: value?.layoutOrder === 'columns' ? 'columns' : 'rows',
+      groupAddControl: value?.groupAddControl === 'dropdown' ? 'dropdown' : 'toggle',
       defaultMovement: Object.fromEntries(
         (['tag', 'description', 'group'] as const).map((type) => [
           type,

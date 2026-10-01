@@ -526,3 +526,38 @@ footer {
     column-span: all;
   }
 }
+
+.group-header .group-add-control {
+  font: inherit;
+  font-size: 11px;
+  padding: 4px 6px;
+  border: 1px solid #d9ded7;
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  max-width: 110px;
+}
+.settings-content select {
+  min-width: 0;
+  max-width: 100%;
+}
+.group-header .add-buttons-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: #7a877d;
+}
+.group-header .add-buttons-toggle[aria-expanded='true'] {
+  color: #315e45;
+  background: #dfe9df;
+}
+.group-header .add-buttons-toggle:hover {
+  background: #d3e2d5;
+  color: #315e45;
+}

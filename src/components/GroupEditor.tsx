@@ -11,6 +11,7 @@ type GroupEditorProps = {
   onUngroup: () => void;
   movementControls: ReactNode;
   movementControlsToggle: ReactNode;
+  addElementControl: ReactNode;
   children: ReactNode;
 };
 
@@ -22,6 +23,7 @@ export function GroupEditor({
   onUngroup,
   movementControls,
   movementControlsToggle,
+  addElementControl,
   children,
 }: GroupEditorProps) {
   return (
@@ -40,6 +42,7 @@ export function GroupEditor({
             value={group.name}
             onChange={(event) => onUpdate({ name: event.target.value })}
           />
+          {addElementControl}
           {movementControlsToggle}
           <button
             aria-label={`${group.collapsed ? 'Expand' : 'Collapse'} ${group.name}`}

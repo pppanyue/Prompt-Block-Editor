@@ -43,6 +43,7 @@ export default function App() {
             blocks={document.blocks}
             twoColumns={preferences.settings.twoColumns}
             layoutOrder={preferences.settings.layoutOrder}
+            groupAddControl={preferences.settings.groupAddControl}
             movementVisibility={preferences.movementVisibility}
             onToggleMovement={preferences.toggleMovement}
             onAdd={editor.addBlock}

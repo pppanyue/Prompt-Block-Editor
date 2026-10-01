@@ -92,6 +92,26 @@ export function SettingsPanel({ settings, onChange, onSetCurrentMovement }: Sett
         <fieldset>
           <legend>Layout</legend>
           <label>
+            Group topbar add control
+            <select
+              aria-label="Group topbar add control"
+              value={settings.groupAddControl}
+              onChange={(event) =>
+                onChange({
+                  ...settings,
+                  groupAddControl: event.target.value as 'toggle' | 'dropdown',
+                })
+              }
+            >
+              <option value="toggle">Show/hide add buttons</option>
+              <option value="dropdown">Add element dropdown</option>
+            </select>
+          </label>
+          <p className="hint">
+            Dropdown mode replaces each group's add-button row. The document's add buttons stay
+            available.
+          </p>
+          <label>
             <input
               type="checkbox"
               checked={settings.twoColumns}

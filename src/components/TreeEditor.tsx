@@ -18,6 +18,7 @@ export type TreeEditorProps = {
   blocks: Block[];
   twoColumns: boolean;
   layoutOrder: 'rows' | 'columns';
+  groupAddControl: 'toggle' | 'dropdown';
   movementVisibility: Record<string, boolean>;
   onToggleMovement: (id: string) => void;
   onAdd: (parentId: string | null, type: Block['type']) => void;
@@ -38,6 +39,15 @@ function destinations(blocks: Block[], path = ''): Destination[] {
 
 export function TreeEditor(props: TreeEditorProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [hiddenAddButtons, setHiddenAddButtons] = useState<Set<string>>(() => new Set());
+  function toggleAddButtons(id: string) {
+    setHiddenAddButtons((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const targets: Destination[] = [
     { id: null, label: 'Document (top level)' },
@@ -80,6 +90,8 @@ export function TreeEditor(props: TreeEditorProps) {
           inheritedDisabled={false}
           activeId={activeId}
           targets={targets}
+          hiddenAddButtons={hiddenAddButtons}
+          onToggleAddButtons={toggleAddButtons}
         />
       </DndContext>
       <p className="hint">
@@ -97,6 +109,8 @@ type BlockListProps = TreeEditorProps & {
   inheritedDisabled: boolean;
   activeId: string | null;
   targets: Destination[];
+  hiddenAddButtons: Set<string>;
+  onToggleAddButtons: (id: string) => void;
 };
 
 function BlockList(props: BlockListProps) {
@@ -183,6 +197,50 @@ function BlockList(props: BlockListProps) {
             {block.type === 'group' ? (
               <GroupEditor
                 group={block}
+                addElementControl={
+                  props.groupAddControl === 'dropdown' ? (
+                    <select
+                      className="group-add-control"
+                      aria-label={`Add element to ${block.name}`}
+                      value=""
+                      onChange={(event) => {
+                        const type = event.target.value;
+                        if (type === 'tag' || type === 'description' || type === 'group')
+                          props.onAdd(block.id, type);
+                      }}
+                    >
+                      <option value="" disabled>
+                        Add…
+                      </option>
+                      <option value="tag">Tag</option>
+                      <option value="description">Description</option>
+                      <option value="group">Group</option>
+                    </select>
+                  ) : (
+                    <button
+                      className="group-add-control add-buttons-toggle"
+                      aria-label={`${props.hiddenAddButtons.has(block.id) ? 'Show' : 'Hide'} add buttons for ${block.name}`}
+                      aria-expanded={!props.hiddenAddButtons.has(block.id)}
+                      title={`${props.hiddenAddButtons.has(block.id) ? 'Show' : 'Hide'} add buttons`}
+                      onClick={() => props.onToggleAddButtons(block.id)}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="4" width="18" height="16" rx="3" />
+                        <path d="M3 14h18M9 14v6M15 14v6M12 7v4M10 9h4" />
+                      </svg>
+                    </button>
+                  )
+                }
                 inheritedDisabled={inheritedDisabled}
                 movementControls={movementVisible ? movementControls : null}
                 movementControlsToggle={movementControlsToggle}
@@ -226,11 +284,14 @@ function BlockList(props: BlockListProps) {
         parentId === null ? 'Move to end of document' : `Move into ${parentName}`,
       )}
       {!items.length && <p className="empty">Add a block or drop one here.</p>}
-      <div className="add-buttons" role="group" aria-label={`Add to ${parentName}`}>
-        <button onClick={() => props.onAdd(parentId, 'tag')}>+ Tag</button>
-        <button onClick={() => props.onAdd(parentId, 'description')}>+ Description</button>
-        <button onClick={() => props.onAdd(parentId, 'group')}>+ Group</button>
-      </div>
+      {(parentId === null ||
+        (props.groupAddControl === 'toggle' && !props.hiddenAddButtons.has(parentId))) && (
+        <div className="add-buttons" role="group" aria-label={`Add to ${parentName}`}>
+          <button onClick={() => props.onAdd(parentId, 'tag')}>+ Tag</button>
+          <button onClick={() => props.onAdd(parentId, 'description')}>+ Description</button>
+          <button onClick={() => props.onAdd(parentId, 'group')}>+ Group</button>
+        </div>
+      )}
     </div>
   );
 }
