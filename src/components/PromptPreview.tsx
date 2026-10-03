@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { assemblePrompt, type PromptDocument } from '../core/document';
 
 type PromptPreviewProps = {
+  annotated?: boolean;
+  onAnnotatedChange?: (value: boolean) => void;
   document: PromptDocument;
   weights: WeightSettings;
   separator: string;
@@ -14,6 +16,8 @@ type PromptPreviewProps = {
 };
 
 export function PromptPreview({
+  annotated: controlledAnnotated,
+  onAnnotatedChange,
   document,
   weights,
   separator,
@@ -22,7 +26,12 @@ export function PromptPreview({
   commentPrefix,
   repeatPrefix,
 }: PromptPreviewProps) {
-  const [annotated, setAnnotated] = useState(false);
+  const [localAnnotated, setLocalAnnotated] = useState(false);
+  const annotated = controlledAnnotated ?? localAnnotated;
+  const setAnnotated = (value: boolean) => {
+    setLocalAnnotated(value);
+    onAnnotatedChange?.(value);
+  };
   const output = assemblePrompt(
     document,
     annotated,

@@ -57,12 +57,8 @@ export function SeparatorSettings({ value, onChange, rules, onRulesChange }: Pro
         />
         Put nested groups on dedicated lines
       </label>
-      <p className="hint">
-        Adds a line break before and after each selected group.
-      </p>
-      <p className="hint">
-        Annotated output always puts groups on dedicated lines.
-      </p>
+      <p className="hint">Adds a line break before and after each selected group.</p>
+      <p className="hint">Annotated output always puts groups on dedicated lines.</p>
       <label>
         <input
           type="checkbox"
@@ -83,13 +79,12 @@ export function SeparatorSettings({ value, onChange, rules, onRulesChange }: Pro
         />
       </label>
       <p className="hint">
-        Used between active elements and groups, with no trailing separator. Each character is a matching ending sign. Enter any text, spaces,
-        line breaks, or nothing.
+        Used between active elements and groups, with no trailing separator. Each character is a
+        matching ending sign. Enter any text, spaces, line breaks, or nothing.
       </p>
       <p className="hint">
-        A match removes separator punctuation/text but
-        keeps its whitespace. Syntax changes never override it. Group headings still use their
-        own line break.
+        A match removes separator punctuation/text but keeps its whitespace. Syntax changes never
+        override it. Group headings still use their own line break.
       </p>
     </fieldset>
   );

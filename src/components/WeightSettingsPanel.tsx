@@ -1,7 +1,11 @@
 import { formatWeightedText, type WeightSettings } from '../core/weights';
 
-type Props = { settings: WeightSettings; onChange: (settings: WeightSettings) => void };
-export function WeightSettingsPanel({ settings, onChange }: Props) {
+type Props = {
+  settings: WeightSettings;
+  onChange: (settings: WeightSettings) => void;
+  showIncrement?: boolean;
+};
+export function WeightSettingsPanel({ settings, onChange, showIncrement = true }: Props) {
   return (
     <fieldset>
       <legend>Element weights</legend>
@@ -28,23 +32,25 @@ export function WeightSettingsPanel({ settings, onChange }: Props) {
           <option value="section">Section — text::1.2</option>
         </select>
       </label>
-      <label>
-        Button increment{' '}
-        <input
-          aria-label="Weight increment"
-          type="number"
-          min="0.001"
-          max="10"
-          step="0.001"
-          defaultValue={settings.increment}
-          onBlur={(event) => {
-            const increment = event.target.valueAsNumber;
-            if (Number.isFinite(increment) && increment >= 0.001 && increment <= 10)
-              onChange({ ...settings, increment });
-            else event.target.value = String(settings.increment);
-          }}
-        />
-      </label>
+      {showIncrement && (
+        <label>
+          Button increment{' '}
+          <input
+            aria-label="Weight increment"
+            type="number"
+            min="0.001"
+            max="10"
+            step="0.001"
+            defaultValue={settings.increment}
+            onBlur={(event) => {
+              const increment = event.target.valueAsNumber;
+              if (Number.isFinite(increment) && increment >= 0.001 && increment <= 10)
+                onChange({ ...settings, increment });
+              else event.target.value = String(settings.increment);
+            }}
+          />
+        </label>
+      )}
       <label>
         When weight is 1
         <select
@@ -77,8 +83,8 @@ export function WeightSettingsPanel({ settings, onChange }: Props) {
         options change output only; the weight input remains available.
       </p>
       <p className="hint">
-        Weights range from 0 to 100; Disabling hides controls and weight syntax but
-        keeps saved values. Section mode treats each element as a separate section.
+        Weights range from 0 to 100; Disabling hides controls and weight syntax but keeps saved
+        values. Section mode treats each element as a separate section.
       </p>
     </fieldset>
   );

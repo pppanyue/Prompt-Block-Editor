@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from 'react';
+import { useRef, useId, type ChangeEvent } from 'react';
 
 type DocumentToolbarProps = {
   title: string;
@@ -21,6 +21,7 @@ export function DocumentToolbar({
   onImport,
   onExport,
 }: DocumentToolbarProps) {
+  const titleId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -35,11 +36,11 @@ export function DocumentToolbar({
     <>
       <div className="document-bar">
         <div>
-          <label className="eyebrow" htmlFor="title">
-            PROMPT DOCUMENT
+          <label className="eyebrow" htmlFor={titleId}>
+            PROMPT NAME / TAB NAME
           </label>
           <input
-            id="title"
+            id={titleId}
             className="title"
             value={title}
             onChange={(event) => onTitleChange(event.target.value)}
@@ -52,7 +53,7 @@ export function DocumentToolbar({
           <button disabled={!canRedo} onClick={onRedo}>
             Redo
           </button>
-          <button onClick={() => fileInput.current?.click()}>Import</button>
+          <button onClick={() => fileInput.current?.click()}>Import JSON</button>
           <button onClick={onExport}>Export JSON</button>
         </div>
       </div>

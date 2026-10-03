@@ -48,13 +48,14 @@ input[type='checkbox'] {
   cursor: pointer;
 }
 header {
-  height: 86px;
+  height: 48px;
+  flex-shrink: 0;
   background: #fcfcf9;
   border-bottom: 1px solid #dfe3db;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 5vw;
+  padding: 0 20px;
 }
 .brand {
   display: flex;
@@ -72,9 +73,9 @@ header {
 .logo {
   background: #315e45;
   color: white;
-  font-size: 25px;
+  font-size: 20px;
   border-radius: 10px;
-  padding: 4px 11px;
+  padding: 2px 8px;
 }
 .version,
 .eyebrow {
@@ -603,4 +604,347 @@ footer {
   min-width: 0;
   width: 100%;
   resize: vertical;
+}
+
+.workflow-toolbar,
+.workflow-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.workflow-toolbar {
+  justify-content: space-between;
+}
+.workflow-toolbar label,
+.prompt-role {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.workflow-toolbar input {
+  padding: 7px;
+  border: 1px solid #d9ded7;
+  border-radius: 6px;
+}
+.prompt-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 6px;
+  max-width: 100%;
+}
+.prompt-tab-label {
+  display: flex;
+  border: 1px solid #d9ded7;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.prompt-tab-label button {
+  border: 0;
+  border-radius: 0;
+}
+.prompt-tab-label [aria-selected='true'] {
+  background: #315e45;
+  color: white;
+}
+.prompt-tab-label small {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+}
+.tab-close {
+  color: #859083;
+  padding: 5px;
+}
+.prompt-tab-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.prompt-tab-panel[hidden] {
+  display: none;
+}
+.prompt-tab-panel .document-bar {
+  margin-bottom: 10px;
+}
+.prompt-role {
+  margin-bottom: 22px;
+}
+.prompt-role select {
+  padding: 5px;
+  border: 1px solid #d9ded7;
+  border-radius: 6px;
+}
+.prompt-sidebar {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+}
+.prompt-sidebar .preview {
+  position: static;
+}
+.prompt-output-settings .settings-content {
+  display: block;
+}
+.prompt-output-settings fieldset {
+  margin-top: 12px;
+}
+.recovery-notice {
+  padding: 14px;
+  border: 1px solid #a97440;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+@media (max-width: 850px) {
+  .prompt-sidebar {
+    position: static;
+  }
+}
+
+/* Window-sized shell: content panes own scrolling, never the document. */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+.app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app > main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 10px 16px 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.brand {
+  gap: 8px;
+}
+.brand strong {
+  font-size: 15px;
+}
+.brand small {
+  display: inline;
+  margin-left: 12px;
+  font-size: 11px;
+}
+main > .settings-panel {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+}
+main > .settings-panel[open] {
+  max-height: 35vh;
+  overflow: auto;
+}
+.workflow-toolbar,
+.workflow-tabs {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.workflow-tabs {
+  flex-wrap: nowrap;
+}
+.prompt-tabs {
+  min-width: 0;
+}
+.workflow-tabs > button,
+.workflow-tabs > select {
+  flex-shrink: 0;
+}
+.document-bar {
+  gap: 10px;
+  flex-shrink: 0;
+}
+.document-bar > div {
+  min-width: 0;
+}
+.title {
+  font-size: 22px;
+  min-width: 0;
+}
+.eyebrow {
+  margin-bottom: 2px;
+}
+.prompt-role {
+  margin: 0 0 8px;
+  flex-shrink: 0;
+}
+.workspace {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  overflow: hidden;
+}
+.prompt-editor-scroll {
+  flex: 1.3;
+  min-width: 0;
+  overflow: auto;
+  padding: 2px 8px 12px 2px;
+}
+.prompt-sidebar {
+  flex: 1;
+  position: static;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.prompt-sidebar .preview {
+  height: 100%;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+.preview textarea {
+  flex: 1;
+  min-height: 60px;
+  resize: none;
+}
+.preview .section-heading,
+.preview .mode-switch,
+.preview-footer {
+  flex-shrink: 0;
+}
+.preview .hint {
+  margin: 8px 0 0;
+}
+.prompt-output-settings {
+  position: relative;
+  flex: 0 0 38px;
+  width: 38px;
+  margin: 0;
+  padding: 0;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+}
+.prompt-output-settings > summary {
+  list-style: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px;
+  writing-mode: vertical-rl;
+}
+.prompt-output-settings > summary::-webkit-details-marker {
+  display: none;
+}
+.drawer-chevron {
+  font-size: 22px;
+  line-height: 1;
+  writing-mode: horizontal-tb;
+}
+.prompt-output-settings[open] {
+  flex-basis: 300px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+.prompt-output-settings[open] > summary {
+  height: 42px;
+  writing-mode: horizontal-tb;
+  border-bottom: 1px solid #d9ded7;
+}
+.prompt-output-settings[open] .drawer-chevron {
+  transform: rotate(180deg);
+}
+.output-settings-scroll {
+  position: absolute;
+  inset: 42px 0 0;
+  overflow: auto;
+  padding: 0 12px 12px;
+}
+.prompt-output-settings .settings-content {
+  margin-top: 0;
+}
+.prompt-tab-panel > [role='status'] {
+  margin: 4px 0;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+main > footer {
+  margin: 0;
+  padding: 5px 0;
+  flex-shrink: 0;
+}
+.recovery-notice {
+  max-height: 25vh;
+  overflow: auto;
+  flex-shrink: 0;
+}
+@media (max-width: 1100px) {
+  .prompt-output-settings[open] {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    width: min(340px, 90%);
+    box-shadow: -8px 0 24px #29372f22;
+  }
+  .workspace:has(.prompt-output-settings[open]) {
+    padding-right: 38px;
+  }
+}
+@media (max-width: 650px) {
+  .brand small {
+    display: none;
+  }
+  .app > main {
+    padding: 8px 8px 0;
+  }
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 38px;
+    grid-template-rows: minmax(0, 1fr) minmax(140px, 0.7fr);
+    gap: 8px;
+  }
+  .prompt-editor-scroll {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .prompt-sidebar {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .prompt-output-settings {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
+  .prompt-output-settings[open] {
+    grid-area: auto;
+  }
+  .workspace:has(.prompt-output-settings[open]) {
+    padding-right: 0;
+  }
+  .prompt-sidebar .preview {
+    min-height: 220px;
+  }
+  .document-bar {
+    flex-wrap: wrap;
+  }
+  .actions {
+    gap: 4px;
+  }
+  .actions button {
+    padding: 5px 7px;
+  }
 }

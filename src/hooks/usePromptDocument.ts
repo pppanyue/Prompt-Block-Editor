@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import * as tree from '../core/tree';
 import {
   parseDocument,
@@ -54,12 +54,30 @@ function loadInitialHistory(): History {
   return { past: [], present, future: [] };
 }
 
-export function usePromptDocument() {
-  const [history, dispatch] = useReducer(historyReducer, undefined, loadInitialHistory);
+type ManagedDocument = {
+  initialDocument: PromptDocument;
+  onChange: (document: PromptDocument) => void;
+};
+export function usePromptDocument(managed?: ManagedDocument) {
+  const [history, dispatch] = useReducer(historyReducer, undefined, () =>
+    managed
+      ? { past: [], present: structuredClone(managed.initialDocument), future: [] }
+      : loadInitialHistory(),
+  );
+  const managedRef = useRef(managed);
+  managedRef.current = managed;
+  const lastPublished = useRef(history.present);
   const [status, setStatus] = useState('Stored on this device');
   const document = history.present;
 
   useEffect(() => {
+    if (managedRef.current) {
+      if (lastPublished.current !== document) {
+        lastPublished.current = document;
+        managedRef.current.onChange(document);
+      }
+      return;
+    }
     // Opening the app should not overwrite an unreadable saved document.
     if (!history.past.length && !history.future.length) return;
     try {

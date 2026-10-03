@@ -1,15 +1,27 @@
+import { useMemo } from 'react';
+import { type Block } from './core/document';
 import { SettingsPanel } from './components/SettingsPanel';
+import { PromptTab } from './components/PromptTab';
+import { WorkflowTabs } from './components/WorkflowTabs';
 import { useEditorSettings } from './hooks/useEditorSettings';
-import { DocumentToolbar } from './components/DocumentToolbar';
-import { TreeEditor } from './components/TreeEditor';
-import { PromptPreview } from './components/PromptPreview';
-import { usePromptDocument } from './hooks/usePromptDocument';
+import { useWorkflow } from './hooks/useWorkflow';
 
+// Imported documents may reuse block IDs. UI preferences must stay scoped to their tab.
+function scopedBlocks(blocks: Block[], tabId: string): Block[] {
+  return blocks.map((block) =>
+    block.type === 'group'
+      ? { ...block, id: `${tabId}/${block.id}`, blocks: scopedBlocks(block.blocks, tabId) }
+      : { ...block, id: `${tabId}/${block.id}` },
+  );
+}
 export default function App() {
-  const editor = usePromptDocument();
-  const { document } = editor;
-  const preferences = useEditorSettings(document.blocks);
-
+  const workspace = useWorkflow();
+  const { workflow } = workspace;
+  const blocks = useMemo(
+    () => workflow.prompts.flatMap((prompt) => scopedBlocks(prompt.document.blocks, prompt.id)),
+    [workflow.prompts],
+  );
+  const preferences = useEditorSettings(blocks);
   return (
     <div className="app">
       <header>
@@ -20,7 +32,7 @@ export default function App() {
             <small>Your prompts, piece by piece.</small>
           </div>
         </div>
-        <span className="version">LOCAL WORKSPACE · v0.1</span>
+        <span className="version">LOCAL WORKSPACE · v0.2</span>
       </header>
       <main>
         <SettingsPanel
@@ -28,42 +40,47 @@ export default function App() {
           onChange={preferences.setSettings}
           onSetCurrentMovement={preferences.setCurrentMovement}
         />
-        <DocumentToolbar
-          title={document.title}
-          canUndo={editor.canUndo}
-          canRedo={editor.canRedo}
-          onTitleChange={editor.updateTitle}
-          onUndo={editor.undo}
-          onRedo={editor.redo}
-          onImport={editor.importDocument}
-          onExport={editor.exportDocument}
-        />
-        <div className="workspace">
-          <TreeEditor
-            blocks={document.blocks}
-            weights={preferences.settings.weights}
-            twoColumns={preferences.settings.twoColumns}
-            layoutOrder={preferences.settings.layoutOrder}
-            groupAddControl={preferences.settings.groupAddControl}
-            movementVisibility={preferences.movementVisibility}
-            onToggleMovement={preferences.toggleMovement}
-            onAdd={editor.addBlock}
-            onUpdate={editor.updateBlock}
-            onRemove={editor.removeBlock}
-            onMove={editor.moveBlock}
-            onUngroup={editor.ungroupBlock}
-          />
-          <PromptPreview
-            document={document}
-            separator={preferences.settings.separator}
-            separatorRules={preferences.settings.separatorRules}
-            weights={preferences.settings.weights}
-            onStatus={editor.setStatus}
-            commentPrefix={preferences.settings.commentPrefix}
-            repeatPrefix={preferences.settings.repeatPrefix}
-          />
+        {workspace.saveBlocked && (
+          <div className="recovery-notice" role="alert">
+            <p>{workspace.status}</p>
+            <button onClick={workspace.exportUnreadable}>Export recovery data</button>{' '}
+            <button onClick={workspace.allowSaving}>Use current workflow and enable saving</button>
+          </div>
+        )}
+        <div className="workflow-toolbar">
+          <label>
+            Workflow{' '}
+            <input
+              aria-label="Workflow name"
+              value={workflow.name}
+              onChange={(event) => workspace.renameWorkflow(event.target.value)}
+            />
+          </label>
+          <button onClick={workspace.exportWorkflow}>Export workflow</button>
         </div>
-        <footer role="status">{editor.status}</footer>
+        <WorkflowTabs
+          workflow={workflow}
+          onSelect={workspace.selectPrompt}
+          onAdd={workspace.addPrompt}
+          onArchive={workspace.archivePrompt}
+          onRestore={workspace.restorePrompt}
+        />
+        {workflow.prompts.map((prompt) => (
+          <PromptTab
+            key={prompt.id}
+            prompt={prompt}
+            active={prompt.id === workflow.activePromptId && !prompt.archived}
+            settings={preferences.settings}
+            movementVisibility={Object.fromEntries(
+              Object.entries(preferences.movementVisibility)
+                .filter(([key]) => key.startsWith(`${prompt.id}/`))
+                .map(([key, value]) => [key.slice(prompt.id.length + 1), value]),
+            )}
+            onToggleMovement={(id) => preferences.toggleMovement(`${prompt.id}/${id}`)}
+            onChange={(patch) => workspace.updatePrompt(prompt.id, patch)}
+          />
+        ))}
+        <footer role="status">{workspace.status}</footer>
       </main>
     </div>
   );

@@ -1,5 +1,3 @@
-import { SeparatorSettings } from './SeparatorSettings';
-import { WeightSettingsPanel } from './WeightSettingsPanel';
 import { type Block } from '../core/document';
 import { type EditorSettings } from '../hooks/useEditorSettings';
 
@@ -11,40 +9,27 @@ type SettingsPanelProps = {
 export function SettingsPanel({ settings, onChange, onSetCurrentMovement }: SettingsPanelProps) {
   return (
     <details className="settings-panel">
-      <summary>Settings</summary>
+      <summary>Global editing settings</summary>
       <div className="settings-content">
-        <SeparatorSettings
-          value={settings.separator}
-          rules={settings.separatorRules}
-          onRulesChange={(separatorRules) => onChange({ ...settings, separatorRules })}
-          onChange={(separator) => onChange({ ...settings, separator })}
-        />
-        <WeightSettingsPanel
-          settings={settings.weights}
-          onChange={(weights) => onChange({ ...settings, weights })}
-        />
         <fieldset>
-          <legend>Group names in annotated output</legend>
+          <legend>Weight editing</legend>
           <label>
-            Comment prefix{' '}
+            Button increment{' '}
             <input
-              aria-label="Comment prefix"
-              value={settings.commentPrefix}
-              onChange={(event) => onChange({ ...settings, commentPrefix: event.target.value })}
-              placeholder="# or //"
+              aria-label="Weight increment"
+              type="number"
+              min="0.001"
+              max="10"
+              step="0.001"
+              defaultValue={settings.weights.increment}
+              onBlur={(event) => {
+                const increment = event.target.valueAsNumber;
+                if (Number.isFinite(increment) && increment >= 0.001 && increment <= 10)
+                  onChange({ ...settings, weights: { ...settings.weights, increment } });
+                else event.target.value = String(settings.weights.increment);
+              }}
             />
           </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.repeatPrefix}
-              onChange={(event) => onChange({ ...settings, repeatPrefix: event.target.checked })}
-            />
-            Repeat prefix for each nesting level
-          </label>
-          <p className="hint">
-            Used in preview and copied text. An empty prefix outputs just the name.
-          </p>
         </fieldset>
         <fieldset>
           <legend>Movement controls</legend>
