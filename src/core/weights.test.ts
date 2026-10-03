@@ -68,3 +68,74 @@ it('rejects malformed weights and restores safe settings defaults', () => {
     enabled: true,
   });
 });
+
+it('uses exact separators independently of syntax, including across groups and punctuation', () => {
+  const doc: PromptDocument = {
+    version: 2,
+    title: '',
+    blocks: [
+      { id: 'a', type: 'tag', text: 'red', enabled: true, weight: 1.2 },
+      { id: 'empty', type: 'description', text: '  ', enabled: true },
+      {
+        id: 'g',
+        type: 'group',
+        name: 'G',
+        enabled: true,
+        collapsed: true,
+        includeHeading: false,
+        blocks: [{ id: 'b', type: 'description', text: 'blue.', enabled: true, weight: 0.8 }],
+      },
+    ],
+  };
+  const settings = { ...defaultWeights, enabled: true, syntax: 'section' as const };
+  for (const separator of [', ', ' ', '\n', '', ' / ']) {
+    expect(assemblePrompt(doc, false, '#', true, settings, separator)).toBe(
+      'red::1.2' + separator + 'blue.::0.8',
+    );
+    expect(assemblePrompt(doc, false, '#', true, { ...settings, enabled: false }, separator)).toBe(
+      'red' + separator + 'blue.',
+    );
+  }
+});
+it('layers neutral-weight hiding without changing non-neutral values', () => {
+  for (const syntax of ['parentheses', 'square', 'curly', 'section'] as const) {
+    const full = { hideNeutralWeight: true, keepNeutralBrackets: false, hideNeutralColon: true };
+    expect(formatWeightedText('text', 1, syntax, full)).toBe('text');
+    expect(formatWeightedText('text', 1.2, syntax, full)).toBe(
+      formatWeightedText('text', 1.2, syntax),
+    );
+  }
+  expect(
+    formatWeightedText('text', 1, 'parentheses', {
+      hideNeutralWeight: true,
+      keepNeutralBrackets: true,
+    }),
+  ).toBe('(text:)');
+  expect(
+    formatWeightedText('text', 1, 'parentheses', {
+      hideNeutralWeight: true,
+      keepNeutralBrackets: true,
+      hideNeutralColon: true,
+    }),
+  ).toBe('(text)');
+  expect(
+    formatWeightedText('text', 1, 'section', {
+      hideNeutralWeight: true,
+      keepNeutralBrackets: true,
+    }),
+  ).toBe('text::');
+  expect(
+    formatWeightedText('text', 1, 'section', {
+      hideNeutralWeight: true,
+      keepNeutralBrackets: true,
+      hideNeutralColon: true,
+    }),
+  ).toBe('text');
+  expect(
+    formatWeightedText('text', 1, 'parentheses', {
+      hideNeutralWeight: false,
+      keepNeutralBrackets: true,
+      hideNeutralColon: true,
+    }),
+  ).toBe('(text:1)');
+});

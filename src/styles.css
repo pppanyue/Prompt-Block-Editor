@@ -589,3 +589,18 @@ footer {
   padding: 3px 5px;
   background: #fff;
 }
+
+.separator-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.separator-presets button[aria-pressed='true'] {
+  background: #dfe9df;
+  color: #315e45;
+}
+.settings-content textarea {
+  min-width: 0;
+  width: 100%;
+  resize: vertical;
+}

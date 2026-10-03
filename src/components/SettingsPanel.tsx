@@ -1,3 +1,4 @@
+import { SeparatorSettings } from './SeparatorSettings';
 import { WeightSettingsPanel } from './WeightSettingsPanel';
 import { type Block } from '../core/document';
 import { type EditorSettings } from '../hooks/useEditorSettings';
@@ -12,6 +13,10 @@ export function SettingsPanel({ settings, onChange, onSetCurrentMovement }: Sett
     <details className="settings-panel">
       <summary>Settings</summary>
       <div className="settings-content">
+        <SeparatorSettings
+          value={settings.separator}
+          onChange={(separator) => onChange({ ...settings, separator })}
+        />
         <WeightSettingsPanel
           settings={settings.weights}
           onChange={(weights) => onChange({ ...settings, weights })}

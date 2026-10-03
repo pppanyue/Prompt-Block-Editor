@@ -63,3 +63,27 @@ it('supports custom, repeated and empty comment prefixes without changing clean 
   expect(assemblePrompt(document, true, '', false)).toBe('Scene\nLight\nlight');
   expect(assemblePrompt(document, false, '//', true)).toBe('light');
 });
+
+it('persists exact separators and neutral-weight options', () => {
+  const { result, unmount } = renderHook(() => useEditorSettings([]));
+  act(() =>
+    result.current.setSettings({
+      ...result.current.settings,
+      separator: '',
+      weights: {
+        ...result.current.settings.weights,
+        hideNeutralWeight: true,
+        keepNeutralBrackets: true,
+        hideNeutralColon: true,
+      },
+    }),
+  );
+  unmount();
+  const restored = renderHook(() => useEditorSettings([]));
+  expect(restored.result.current.settings.separator).toBe('');
+  expect(restored.result.current.settings.weights).toMatchObject({
+    hideNeutralWeight: true,
+    keepNeutralBrackets: true,
+    hideNeutralColon: true,
+  });
+});

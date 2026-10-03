@@ -4,6 +4,7 @@ import { type Block } from '../core/document';
 
 export type EditorSettings = {
   weights: WeightSettings;
+  separator: string;
   commentPrefix: string;
   repeatPrefix: boolean;
   twoColumns: boolean;
@@ -13,6 +14,7 @@ export type EditorSettings = {
 };
 const defaults: EditorSettings = {
   weights: defaultWeights,
+  separator: ', ',
   commentPrefix: '#',
   repeatPrefix: true,
   twoColumns: false,
@@ -26,6 +28,7 @@ function loadSettings(): EditorSettings {
     const value = JSON.parse(localStorage.getItem(storageKey) || 'null');
     return {
       weights: parseWeightSettings(value?.weights),
+      separator: typeof value?.separator === 'string' ? value.separator : ', ',
       commentPrefix:
         typeof value?.commentPrefix === 'string' ? value.commentPrefix : defaults.commentPrefix,
       repeatPrefix:

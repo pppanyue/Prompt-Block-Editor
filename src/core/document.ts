@@ -34,6 +34,7 @@ export function assemblePrompt(
   commentPrefix = '#',
   repeatPrefix = true,
   weights?: WeightSettings,
+  separator?: string,
 ): string {
   function renderBlocks(blocks: Block[], depth: number): string {
     let output = '';
@@ -52,7 +53,7 @@ export function assemblePrompt(
         content = block.text.trim();
         if (!content) continue;
         if (weights?.enabled)
-          content = formatWeightedText(content, block.weight ?? 1, weights.syntax);
+          content = formatWeightedText(content, block.weight ?? 1, weights.syntax, weights);
       }
       if (output) {
         const whitespace =
@@ -62,8 +63,10 @@ export function assemblePrompt(
               ? ' '
               : '\n';
         output +=
-          (weights?.enabled && weights.syntax === 'section' ? '' : separatorAfter(output)) +
-          whitespace;
+          separator !== undefined
+            ? separator
+            : (weights?.enabled && weights.syntax === 'section' ? '' : separatorAfter(output)) +
+              whitespace;
       }
       output += content;
       previousType = block.type;

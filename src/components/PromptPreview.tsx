@@ -5,6 +5,7 @@ import { assemblePrompt, type PromptDocument } from '../core/document';
 type PromptPreviewProps = {
   document: PromptDocument;
   weights: WeightSettings;
+  separator: string;
   commentPrefix: string;
   repeatPrefix: boolean;
   onStatus: (message: string) => void;
@@ -13,12 +14,20 @@ type PromptPreviewProps = {
 export function PromptPreview({
   document,
   weights,
+  separator,
   onStatus,
   commentPrefix,
   repeatPrefix,
 }: PromptPreviewProps) {
   const [annotated, setAnnotated] = useState(false);
-  const output = assemblePrompt(document, annotated, commentPrefix, repeatPrefix, weights);
+  const output = assemblePrompt(
+    document,
+    annotated,
+    commentPrefix,
+    repeatPrefix,
+    weights,
+    separator,
+  );
 
   async function copyPrompt() {
     try {

@@ -1,4 +1,4 @@
-import { type WeightSettings } from '../core/weights';
+import { formatWeightedText, type WeightSettings } from '../core/weights';
 
 type Props = { settings: WeightSettings; onChange: (settings: WeightSettings) => void };
 export function WeightSettingsPanel({ settings, onChange }: Props) {
@@ -45,6 +45,36 @@ export function WeightSettingsPanel({ settings, onChange }: Props) {
           }}
         />
       </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={settings.hideNeutralWeight ?? false}
+          onChange={(event) => onChange({ ...settings, hideNeutralWeight: event.target.checked })}
+        />
+        Hide weight syntax when weight is 1
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          disabled={!settings.hideNeutralWeight}
+          checked={settings.keepNeutralBrackets ?? false}
+          onChange={(event) => onChange({ ...settings, keepNeutralBrackets: event.target.checked })}
+        />
+        Only hide the value, keeping the syntax
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          disabled={!settings.hideNeutralWeight || !settings.keepNeutralBrackets}
+          checked={settings.hideNeutralColon ?? false}
+          onChange={(event) => onChange({ ...settings, hideNeutralColon: event.target.checked })}
+        />
+        Hide the value and symbol
+      </label>
+      <p className="hint">
+        At weight 1: <code>{formatWeightedText('text', 1, settings.syntax, settings)}</code>. These
+        options change output only; the weight input remains available.
+      </p>
       <p className="hint">
         Weights range from 0 to 100; 1 is neutral. Disabling hides controls and weight syntax but
         keeps saved values. Custom bracket formats require a compatible parser; they are not
