@@ -1,9 +1,11 @@
 import { useLayoutEffect, useRef } from 'react';
 import { type PromptTabData } from '../core/workflow';
+import { summarizeBlocks } from '../core/tree';
 import { downloadJson } from '../core/download';
 import { type EditorSettings } from '../hooks/useEditorSettings';
 import { usePromptDocument } from '../hooks/usePromptDocument';
 import { DocumentToolbar } from './DocumentToolbar';
+import { ResizablePanes } from './ResizablePanes';
 import { TreeEditor } from './TreeEditor';
 import { PromptPreview } from './PromptPreview';
 import { PromptOutputSettings } from './PromptOutputSettings';
@@ -11,6 +13,7 @@ import { PromptOutputSettings } from './PromptOutputSettings';
 type Props = {
   prompt: PromptTabData;
   active: boolean;
+  saveStatus: string;
   settings: EditorSettings;
   movementVisibility: Record<string, boolean>;
   onToggleMovement: (id: string) => void;
@@ -19,6 +22,7 @@ type Props = {
 export function PromptTab({
   prompt,
   active,
+  saveStatus,
   settings,
   movementVisibility,
   onToggleMovement,
@@ -44,6 +48,7 @@ export function PromptTab({
     >
       <DocumentToolbar
         title={editor.document.title}
+        summary={summarizeBlocks(editor.document.blocks)}
         canUndo={editor.canUndo}
         canRedo={editor.canRedo}
         onTitleChange={editor.updateTitle}
@@ -52,67 +57,64 @@ export function PromptTab({
         onImport={editor.importDocument}
         onExport={() =>
           downloadJson(
-            { ...editor.document, outputSettings: prompt.output, role: prompt.role },
+            { ...editor.document, outputSettings: prompt.output },
             editor.document.title,
             'prompt',
           )
         }
       />
-      <label className="prompt-role">
-        Prompt role{' '}
-        <select
-          aria-label="Prompt role"
-          value={prompt.role}
-          onChange={(event) => onChange({ role: event.target.value as PromptTabData['role'] })}
-        >
-          <option value="general">General</option>
-          <option value="positive">Positive</option>
-          <option value="negative">Negative</option>
-        </select>
-      </label>
       <div className="workspace">
-        <div
-          className="prompt-editor-scroll"
-          ref={panel}
-          onScroll={(event) => {
-            if (active) scrollPosition.current = event.currentTarget.scrollTop;
-          }}
-        >
-          <TreeEditor
-            blocks={editor.document.blocks}
-            weights={weights}
-            twoColumns={settings.twoColumns}
-            layoutOrder={settings.layoutOrder}
-            groupAddControl={settings.groupAddControl}
-            movementVisibility={movementVisibility}
-            onToggleMovement={onToggleMovement}
-            onAdd={editor.addBlock}
-            onUpdate={editor.updateBlock}
-            onRemove={editor.removeBlock}
-            onMove={editor.moveBlock}
-            onUngroup={editor.ungroupBlock}
-          />
-        </div>
-        <div className="prompt-sidebar">
-          <PromptPreview
-            document={editor.document}
-            weights={weights}
-            separator={prompt.output.separator}
-            separatorRules={prompt.output.separatorRules}
-            commentPrefix={prompt.output.commentPrefix}
-            repeatPrefix={prompt.output.repeatPrefix}
-            annotated={prompt.annotated}
-            onAnnotatedChange={(annotated) => onChange({ annotated })}
-            onStatus={editor.setStatus}
-          />
-        </div>
+        <ResizablePanes
+          editor={
+            <div
+              className="prompt-editor-scroll"
+              ref={panel}
+              onScroll={(event) => {
+                if (active) scrollPosition.current = event.currentTarget.scrollTop;
+              }}
+            >
+              <TreeEditor
+                blocks={editor.document.blocks}
+                weights={weights}
+                twoColumns={settings.twoColumns}
+                layoutOrder={settings.layoutOrder}
+                groupAddControl={settings.groupAddControl}
+                movementVisibility={movementVisibility}
+                onToggleMovement={onToggleMovement}
+                onAdd={editor.addBlock}
+                onUpdate={editor.updateBlock}
+                onRemove={editor.removeBlock}
+                onMove={editor.moveBlock}
+                onUngroup={editor.ungroupBlock}
+              />
+            </div>
+          }
+          preview={
+            <div className="prompt-sidebar">
+              <PromptPreview
+                document={editor.document}
+                weights={weights}
+                separator={prompt.output.separator}
+                separatorRules={prompt.output.separatorRules}
+                commentPrefix={prompt.output.commentPrefix}
+                repeatPrefix={prompt.output.repeatPrefix}
+                annotated={prompt.annotated}
+                onAnnotatedChange={(annotated) => onChange({ annotated })}
+                onStatus={editor.setStatus}
+              />
+            </div>
+          }
+        />
         <PromptOutputSettings
           value={prompt.output}
           increment={settings.weights.increment}
           onChange={(output) => onChange({ output })}
         />
       </div>
-      <p role="status">{editor.status}</p>
+      <footer className="workspace-status" role="status">
+        <span>{saveStatus}</span>
+        {editor.status !== 'Stored on this device' && <span>{editor.status}</span>}
+      </footer>
     </section>
   );
 }

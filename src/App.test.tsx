@@ -1,16 +1,28 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import { WORKFLOW_KEY } from './core/workflow';
-beforeEach(() => localStorage.clear());
-afterEach(cleanup);
+beforeEach(() => {
+  localStorage.clear();
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 const activePanel = () => within(screen.getByRole('tabpanel'));
 const preview = () =>
   (activePanel().getByLabelText('Assembled prompt') as HTMLTextAreaElement).value;
 it('keeps edits, format, movement visibility, undo/redo and preview mode scoped to named tabs', () => {
   render(<App />);
-  fireEvent.change(activePanel().getByLabelText('PROMPT NAME / TAB NAME'), {
+  fireEvent.change(activePanel().getByLabelText('Tab name'), {
     target: { value: 'Positive' },
   });
   fireEvent.change(activePanel().getByLabelText('Description text'), {
@@ -21,10 +33,9 @@ it('keeps edits, format, movement visibility, undo/redo and preview mode scoped 
     activePanel().getByRole('button', { name: 'Hide movement controls for peaceful atmosphere' }),
   );
   fireEvent.click(screen.getByRole('button', { name: '+ Prompt' }));
-  fireEvent.change(activePanel().getByLabelText('PROMPT NAME / TAB NAME'), {
+  fireEvent.change(activePanel().getByLabelText('Tab name'), {
     target: { value: 'Negative' },
   });
-  fireEvent.change(activePanel().getByLabelText('Prompt role'), { target: { value: 'negative' } });
   fireEvent.click(activePanel().getByRole('button', { name: '+ Tag' }));
   fireEvent.change(activePanel().getByLabelText('Tag text'), { target: { value: 'blur' } });
   fireEvent.click(activePanel().getByText('Prompt output settings'));
@@ -39,7 +50,7 @@ it('keeps edits, format, movement visibility, undo/redo and preview mode scoped 
   expect(preview()).not.toContain('Original scene.');
   fireEvent.click(activePanel().getByRole('button', { name: 'Redo' }));
   expect(preview()).toContain('Original scene.');
-  fireEvent.click(screen.getByRole('tab', { name: 'Negative negative' }));
+  fireEvent.click(screen.getByRole('tab', { name: 'Negative' }));
   expect(preview()).toBe('blur');
   expect((activePanel().getByLabelText('Exact separator') as HTMLTextAreaElement).value).toBe(
     ' / ',

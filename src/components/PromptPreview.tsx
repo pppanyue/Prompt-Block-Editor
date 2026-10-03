@@ -77,11 +77,6 @@ export function PromptPreview({
           Copy prompt
         </button>
       </div>
-      <p className="hint">
-        {annotated
-          ? 'Headings are included as text. Use Clean to omit them.'
-          : 'Only enabled content is included. Ready to paste into your generator.'}
-      </p>
     </aside>
   );
 }

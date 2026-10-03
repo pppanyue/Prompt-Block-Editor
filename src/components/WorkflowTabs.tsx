@@ -40,7 +40,6 @@ export function WorkflowTabs({ workflow, onSelect, onAdd, onArchive, onRestore }
               }}
             >
               {prompt.document.title || 'Untitled prompt'}
-              {prompt.role !== 'general' && <small>{prompt.role}</small>}
             </button>
             <button
               className="tab-close"

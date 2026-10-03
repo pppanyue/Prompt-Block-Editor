@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { type Block, type BlockPatch } from '../core/document';
-import { canMoveBlock, findBlock, summarizeBlocks } from '../core/tree';
+import { canMoveBlock, findBlock } from '../core/tree';
 import { BlockEditor } from './BlockEditor';
 import { GroupEditor } from './GroupEditor';
 import { DropSlot } from './SortableItem';
@@ -71,10 +71,6 @@ export function TreeEditor(props: TreeEditorProps) {
 
   return (
     <section aria-label="Prompt blocks" className={`editor ${activeId ? 'tree-dragging' : ''}`}>
-      <div className="section-heading">
-        <h2>Building blocks</h2>
-        <span>{summarizeBlocks(props.blocks)}</span>
-      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={(args) => {

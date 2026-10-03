@@ -32,14 +32,26 @@ export default function App() {
             <small>Your prompts, piece by piece.</small>
           </div>
         </div>
-        <span className="version">LOCAL WORKSPACE · v0.2</span>
+        <div className="header-controls">
+          <div className="workflow-toolbar">
+            <label>
+              Workflow{' '}
+              <input
+                aria-label="Workflow name"
+                value={workflow.name}
+                onChange={(event) => workspace.renameWorkflow(event.target.value)}
+              />
+            </label>
+            <button onClick={workspace.exportWorkflow}>Export workflow</button>
+          </div>
+          <SettingsPanel
+            settings={preferences.settings}
+            onChange={preferences.setSettings}
+            onSetCurrentMovement={preferences.setCurrentMovement}
+          />
+        </div>
       </header>
       <main>
-        <SettingsPanel
-          settings={preferences.settings}
-          onChange={preferences.setSettings}
-          onSetCurrentMovement={preferences.setCurrentMovement}
-        />
         {workspace.saveBlocked && (
           <div className="recovery-notice" role="alert">
             <p>{workspace.status}</p>
@@ -47,17 +59,7 @@ export default function App() {
             <button onClick={workspace.allowSaving}>Use current workflow and enable saving</button>
           </div>
         )}
-        <div className="workflow-toolbar">
-          <label>
-            Workflow{' '}
-            <input
-              aria-label="Workflow name"
-              value={workflow.name}
-              onChange={(event) => workspace.renameWorkflow(event.target.value)}
-            />
-          </label>
-          <button onClick={workspace.exportWorkflow}>Export workflow</button>
-        </div>
+
         <WorkflowTabs
           workflow={workflow}
           onSelect={workspace.selectPrompt}
@@ -69,6 +71,7 @@ export default function App() {
           <PromptTab
             key={prompt.id}
             prompt={prompt}
+            saveStatus={workspace.status}
             active={prompt.id === workflow.activePromptId && !prompt.archived}
             settings={preferences.settings}
             movementVisibility={Object.fromEntries(
@@ -80,7 +83,6 @@ export default function App() {
             onChange={(patch) => workspace.updatePrompt(prompt.id, patch)}
           />
         ))}
-        <footer role="status">{workspace.status}</footer>
       </main>
     </div>
   );

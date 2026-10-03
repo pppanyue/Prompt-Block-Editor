@@ -27,14 +27,13 @@ it('migrates the previous document and output settings without deleting either o
     result.current.workflow,
   );
 });
-it('saves multiple prompts, active tab, roles, archive state and formatting across reloads', () => {
+it('saves multiple prompts, active tab, archive state and formatting across reloads', () => {
   const { result, unmount } = renderHook(useWorkflow);
   const first = result.current.workflow.activePromptId;
   act(() => result.current.addPrompt());
   const second = result.current.workflow.activePromptId;
   act(() =>
     result.current.updatePrompt(second, {
-      role: 'negative',
       annotated: true,
       output: { ...result.current.workflow.prompts[1].output, separator: '\n' },
     }),

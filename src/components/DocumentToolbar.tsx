@@ -2,6 +2,7 @@ import { useRef, useId, type ChangeEvent } from 'react';
 
 type DocumentToolbarProps = {
   title: string;
+  summary?: string;
   canUndo: boolean;
   canRedo: boolean;
   onTitleChange: (title: string) => void;
@@ -13,6 +14,7 @@ type DocumentToolbarProps = {
 
 export function DocumentToolbar({
   title,
+  summary,
   canUndo,
   canRedo,
   onTitleChange,
@@ -36,22 +38,33 @@ export function DocumentToolbar({
     <>
       <div className="document-bar">
         <div>
-          <label className="eyebrow" htmlFor={titleId}>
-            PROMPT NAME / TAB NAME
-          </label>
           <input
             id={titleId}
+            aria-label="Tab name"
             className="title"
             value={title}
             onChange={(event) => onTitleChange(event.target.value)}
           />
         </div>
+        {summary && <span className="document-count">{summary}</span>}
         <div className="actions">
-          <button disabled={!canUndo} onClick={onUndo}>
-            Undo
+          <button
+            className="history-button"
+            aria-label="Undo"
+            title="Undo"
+            disabled={!canUndo}
+            onClick={onUndo}
+          >
+            <span aria-hidden="true">↶</span>
           </button>
-          <button disabled={!canRedo} onClick={onRedo}>
-            Redo
+          <button
+            className="history-button"
+            aria-label="Redo"
+            title="Redo"
+            disabled={!canRedo}
+            onClick={onRedo}
+          >
+            <span aria-hidden="true">↷</span>
           </button>
           <button onClick={() => fileInput.current?.click()}>Import JSON</button>
           <button onClick={onExport}>Export JSON</button>

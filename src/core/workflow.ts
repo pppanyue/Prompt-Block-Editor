@@ -13,7 +13,6 @@ export type PromptTabData = {
   id: string;
   document: PromptDocument;
   output: OutputSettings;
-  role: 'general' | 'positive' | 'negative';
   archived: boolean;
   annotated: boolean;
 };
@@ -42,7 +41,6 @@ export function newPrompt(output: OutputSettings, name = 'Untitled prompt'): Pro
     id: crypto.randomUUID(),
     document: { version: 2, title: name, blocks: [] },
     output: structuredClone(output),
-    role: 'general',
     archived: false,
     annotated: false,
   };
@@ -79,9 +77,6 @@ export function parseWorkflow(value: unknown): Workflow {
       id: prompt.id,
       document: parseDocument(prompt.document),
       output: parseOutputSettings(prompt.output),
-      role: (['positive', 'negative'].includes(prompt.role)
-        ? prompt.role
-        : 'general') as PromptTabData['role'],
       archived: prompt.archived === true,
       annotated: prompt.annotated === true,
     };
