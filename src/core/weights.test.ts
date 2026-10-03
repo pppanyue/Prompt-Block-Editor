@@ -99,7 +99,7 @@ it('uses exact separators independently of syntax, including across groups and p
 });
 it('layers neutral-weight hiding without changing non-neutral values', () => {
   for (const syntax of ['parentheses', 'square', 'curly', 'section'] as const) {
-    const full = { hideNeutralWeight: true, keepNeutralBrackets: false, hideNeutralColon: true };
+    const full = { neutralWeightMode: 'omit-syntax' as const };
     expect(formatWeightedText('text', 1, syntax, full)).toBe('text');
     expect(formatWeightedText('text', 1.2, syntax, full)).toBe(
       formatWeightedText('text', 1.2, syntax),
@@ -107,35 +107,55 @@ it('layers neutral-weight hiding without changing non-neutral values', () => {
   }
   expect(
     formatWeightedText('text', 1, 'parentheses', {
-      hideNeutralWeight: true,
-      keepNeutralBrackets: true,
+      neutralWeightMode: 'omit-value',
     }),
   ).toBe('(text:)');
   expect(
     formatWeightedText('text', 1, 'parentheses', {
-      hideNeutralWeight: true,
-      keepNeutralBrackets: true,
-      hideNeutralColon: true,
+      neutralWeightMode: 'omit-value-and-colons',
     }),
   ).toBe('(text)');
   expect(
     formatWeightedText('text', 1, 'section', {
-      hideNeutralWeight: true,
-      keepNeutralBrackets: true,
+      neutralWeightMode: 'omit-value',
     }),
   ).toBe('text::');
   expect(
     formatWeightedText('text', 1, 'section', {
-      hideNeutralWeight: true,
-      keepNeutralBrackets: true,
-      hideNeutralColon: true,
+      neutralWeightMode: 'omit-value-and-colons',
     }),
   ).toBe('text');
   expect(
     formatWeightedText('text', 1, 'parentheses', {
-      hideNeutralWeight: false,
-      keepNeutralBrackets: true,
-      hideNeutralColon: true,
+      neutralWeightMode: 'full',
     }),
   ).toBe('(text:1)');
+});
+
+it('migrates every combination of legacy neutral-weight checkboxes', () => {
+  for (const hideNeutralWeight of [false, true]) {
+    for (const keepNeutralBrackets of [false, true]) {
+      for (const hideNeutralColon of [false, true]) {
+        const settings = parseWeightSettings({
+          hideNeutralWeight,
+          keepNeutralBrackets,
+          hideNeutralColon,
+        });
+        expect(settings.neutralWeightMode).toBe(
+          !hideNeutralWeight
+            ? 'full'
+            : !keepNeutralBrackets
+              ? 'omit-syntax'
+              : hideNeutralColon
+                ? 'omit-value-and-colons'
+                : 'omit-value',
+        );
+        expect(settings).not.toHaveProperty('hideNeutralWeight');
+      }
+    }
+  }
+  expect(
+    parseWeightSettings({ neutralWeightMode: 'omit-value', hideNeutralWeight: false })
+      .neutralWeightMode,
+  ).toBe('omit-value');
 });

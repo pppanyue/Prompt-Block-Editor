@@ -72,9 +72,7 @@ it('persists exact separators and neutral-weight options', () => {
       separator: '',
       weights: {
         ...result.current.settings.weights,
-        hideNeutralWeight: true,
-        keepNeutralBrackets: true,
-        hideNeutralColon: true,
+        neutralWeightMode: 'omit-value-and-colons',
       },
     }),
   );
@@ -82,8 +80,6 @@ it('persists exact separators and neutral-weight options', () => {
   const restored = renderHook(() => useEditorSettings([]));
   expect(restored.result.current.settings.separator).toBe('');
   expect(restored.result.current.settings.weights).toMatchObject({
-    hideNeutralWeight: true,
-    keepNeutralBrackets: true,
-    hideNeutralColon: true,
+    neutralWeightMode: 'omit-value-and-colons',
   });
 });

@@ -46,39 +46,39 @@ export function WeightSettingsPanel({ settings, onChange }: Props) {
         />
       </label>
       <label>
-        <input
-          type="checkbox"
-          checked={settings.hideNeutralWeight ?? false}
-          onChange={(event) => onChange({ ...settings, hideNeutralWeight: event.target.checked })}
-        />
-        Hide weight syntax when weight is 1
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          disabled={!settings.hideNeutralWeight}
-          checked={settings.keepNeutralBrackets ?? false}
-          onChange={(event) => onChange({ ...settings, keepNeutralBrackets: event.target.checked })}
-        />
-        Only hide the value, keeping the syntax
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          disabled={!settings.hideNeutralWeight || !settings.keepNeutralBrackets}
-          checked={settings.hideNeutralColon ?? false}
-          onChange={(event) => onChange({ ...settings, hideNeutralColon: event.target.checked })}
-        />
-        Hide the value and symbol
+        When weight is 1
+        <select
+          aria-label="When weight is 1"
+          value={settings.neutralWeightMode ?? 'full'}
+          onChange={(event) =>
+            onChange({
+              ...settings,
+              neutralWeightMode: event.target.value as WeightSettings['neutralWeightMode'],
+            })
+          }
+        >
+          {(
+            [
+              ['full', 'Keep full syntax'],
+              ['omit-syntax', 'Omit whole syntax'],
+              ['omit-value', 'Omit number only'],
+              ['omit-value-and-colons', 'Omit number and colons'],
+            ] as const
+          ).map(([mode, label]) => (
+            <option key={mode} value={mode}>
+              {label} —{' '}
+              {formatWeightedText('text', 1, settings.syntax, { neutralWeightMode: mode })}
+            </option>
+          ))}
+        </select>
       </label>
       <p className="hint">
         At weight 1: <code>{formatWeightedText('text', 1, settings.syntax, settings)}</code>. These
         options change output only; the weight input remains available.
       </p>
       <p className="hint">
-        Weights range from 0 to 100; 1 is neutral. Disabling hides controls and weight syntax but
-        keeps saved values. Custom bracket formats require a compatible parser; they are not
-        standard emphasis syntax. Section mode treats each element as a separate section.
+        Weights range from 0 to 100; Disabling hides controls and weight syntax but
+        keeps saved values. Section mode treats each element as a separate section.
       </p>
     </fieldset>
   );

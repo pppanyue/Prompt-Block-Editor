@@ -1,29 +1,42 @@
+export type NeutralWeightMode = 'full' | 'omit-syntax' | 'omit-value' | 'omit-value-and-colons';
 export type WeightSyntax = 'parentheses' | 'square' | 'curly' | 'section';
 export type WeightSettings = {
   enabled: boolean;
   syntax: WeightSyntax;
   increment: number;
-  hideNeutralWeight?: boolean;
-  keepNeutralBrackets?: boolean;
-  hideNeutralColon?: boolean;
+  neutralWeightMode?: NeutralWeightMode;
 };
 export const defaultWeights: WeightSettings = {
   enabled: false,
   syntax: 'parentheses',
   increment: 0.1,
-  hideNeutralWeight: false,
-  keepNeutralBrackets: false,
-  hideNeutralColon: false,
+  neutralWeightMode: 'full',
 };
 export function validWeight(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
 }
 export function parseWeightSettings(value: unknown): WeightSettings {
-  const input = value as Partial<WeightSettings> | null;
+  const input = value as
+    | (Partial<WeightSettings> & {
+        hideNeutralWeight?: boolean;
+        keepNeutralBrackets?: boolean;
+        hideNeutralColon?: boolean;
+      })
+    | null;
+  const legacyMode: NeutralWeightMode =
+    input?.hideNeutralWeight !== true
+      ? 'full'
+      : input.keepNeutralBrackets !== true
+        ? 'omit-syntax'
+        : input.hideNeutralColon === true
+          ? 'omit-value-and-colons'
+          : 'omit-value';
   return {
-    hideNeutralWeight: input?.hideNeutralWeight === true,
-    keepNeutralBrackets: input?.keepNeutralBrackets === true,
-    hideNeutralColon: input?.hideNeutralColon === true,
+    neutralWeightMode: ['full', 'omit-syntax', 'omit-value', 'omit-value-and-colons'].includes(
+      input?.neutralWeightMode ?? '',
+    )
+      ? input!.neutralWeightMode!
+      : legacyMode,
     enabled: typeof input?.enabled === 'boolean' ? input.enabled : false,
     syntax: ['parentheses', 'square', 'curly', 'section'].includes(input?.syntax ?? '')
       ? input!.syntax!
@@ -41,12 +54,13 @@ export function formatWeightedText(
   text: string,
   weight: number,
   syntax: WeightSyntax,
-  options?: Pick<WeightSettings, 'hideNeutralWeight' | 'keepNeutralBrackets' | 'hideNeutralColon'>,
+  options?: Pick<WeightSettings, 'neutralWeightMode'>,
 ): string {
-  const neutralHidden = weight === 1 && options?.hideNeutralWeight;
-  if (neutralHidden && !options?.keepNeutralBrackets) return text;
+  const mode = options?.neutralWeightMode ?? 'full';
+  const neutralHidden = weight === 1 && mode !== 'full';
+  if (neutralHidden && mode === 'omit-syntax') return text;
   const value = neutralHidden ? '' : String(weight);
-  const hideColon = neutralHidden && options?.hideNeutralColon;
+  const hideColon = neutralHidden && mode === 'omit-value-and-colons';
   if (syntax === 'section') return text + (hideColon ? '' : '::') + value;
   const [open, close] =
     syntax === 'square' ? ['[', ']'] : syntax === 'curly' ? ['{', '}'] : ['(', ')'];
