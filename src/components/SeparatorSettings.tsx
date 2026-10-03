@@ -1,5 +1,11 @@
-type Props = { value: string; onChange: (value: string) => void };
-export function SeparatorSettings({ value, onChange }: Props) {
+import { type SeparatorRules } from '../core/separators';
+type Props = {
+  value: string;
+  onChange: (value: string) => void;
+  rules: SeparatorRules;
+  onRulesChange: (rules: SeparatorRules) => void;
+};
+export function SeparatorSettings({ value, onChange, rules, onRulesChange }: Props) {
   return (
     <fieldset>
       <legend>Element separator</legend>
@@ -29,12 +35,61 @@ export function SeparatorSettings({ value, onChange }: Props) {
         />
       </label>
       <p className="hint">
-        Used exactly between active elements and groups, with no trailing separator. Enter any text,
-        spaces, line breaks, or nothing. Syntax changes never override it. Group headings still use
-        their own line break.
+        Current value: <code>{JSON.stringify(value)}</code>
+      </p>
+      <label>
+        <input
+          type="checkbox"
+          checked={rules.newLineBeforeOuterGroup}
+          onChange={(event) =>
+            onRulesChange({ ...rules, newLineBeforeOuterGroup: event.target.checked })
+          }
+        />
+        Put top-level groups on dedicated lines
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={rules.newLineBeforeInnerGroup}
+          onChange={(event) =>
+            onRulesChange({ ...rules, newLineBeforeInnerGroup: event.target.checked })
+          }
+        />
+        Put nested groups on dedicated lines
+      </label>
+      <p className="hint">
+        Adds a line break before and after each selected group.
       </p>
       <p className="hint">
-        Current value: <code>{JSON.stringify(value)}</code>
+        Annotated output always puts groups on dedicated lines.
+      </p>
+      <label>
+        <input
+          type="checkbox"
+          checked={rules.punctuationOverrides}
+          onChange={(event) =>
+            onRulesChange({ ...rules, punctuationOverrides: event.target.checked })
+          }
+        />
+        Ending punctuation overrides the separator
+      </label>
+      <label>
+        Ending signs{' '}
+        <input
+          aria-label="Separator override ending signs"
+          disabled={!rules.punctuationOverrides}
+          value={rules.endingSigns}
+          onChange={(event) => onRulesChange({ ...rules, endingSigns: event.target.value })}
+        />
+      </label>
+      <p className="hint">
+        Used between active elements and groups, with no trailing separator. Each character is a matching ending sign. Enter any text, spaces,
+        line breaks, or nothing.
+      </p>
+      <p className="hint">
+        A match removes separator punctuation/text but
+        keeps its whitespace. Syntax changes never override it. Group headings still use their
+        own line break.
       </p>
     </fieldset>
   );

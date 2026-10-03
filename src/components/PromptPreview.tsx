@@ -1,3 +1,4 @@
+import { type SeparatorRules } from '../core/separators';
 import { type WeightSettings } from '../core/weights';
 import { useState } from 'react';
 import { assemblePrompt, type PromptDocument } from '../core/document';
@@ -6,6 +7,7 @@ type PromptPreviewProps = {
   document: PromptDocument;
   weights: WeightSettings;
   separator: string;
+  separatorRules: SeparatorRules;
   commentPrefix: string;
   repeatPrefix: boolean;
   onStatus: (message: string) => void;
@@ -15,6 +17,7 @@ export function PromptPreview({
   document,
   weights,
   separator,
+  separatorRules,
   onStatus,
   commentPrefix,
   repeatPrefix,
@@ -27,6 +30,7 @@ export function PromptPreview({
     repeatPrefix,
     weights,
     separator,
+    separatorRules,
   );
 
   async function copyPrompt() {

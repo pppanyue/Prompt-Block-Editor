@@ -1,3 +1,4 @@
+import { defaultSeparatorRules, hasEndingSign, type SeparatorRules } from './separators';
 import { formatWeightedText, validWeight, type WeightSettings } from './weights';
 export type TextBlock = {
   id: string;
@@ -35,23 +36,44 @@ export function assemblePrompt(
   repeatPrefix = true,
   weights?: WeightSettings,
   separator?: string,
+  separatorRules: SeparatorRules = defaultSeparatorRules,
 ): string {
-  function renderBlocks(blocks: Block[], depth: number): string {
+  function renderBlocks(
+    blocks: Block[],
+    depth: number,
+  ): { text: string; lastText: string; startsLine: boolean; endsLine: boolean } {
     let output = '';
+    let lastText = '';
+    let startsLine = false;
+    let endsLine = false;
     let previousType: Block['type'] | undefined;
     for (const block of blocks) {
       if (!block.enabled) continue;
       let content: string;
+      let contentLastText = '';
+      let contentStartsLine = false;
+      let contentEndsLine = false;
       if (block.type === 'group') {
-        content = renderBlocks(block.blocks, depth + 1);
+        const rendered = renderBlocks(block.blocks, depth + 1);
+        content = rendered.text;
+        contentLastText = rendered.lastText;
+        const dedicatedLine =
+          annotated ||
+          (depth === 0
+            ? separatorRules.newLineBeforeOuterGroup
+            : separatorRules.newLineBeforeInnerGroup);
+        contentStartsLine = rendered.startsLine || dedicatedLine;
+        contentEndsLine = rendered.endsLine || dedicatedLine;
         if (!content) continue;
         if (annotated && block.includeHeading && block.name.trim()) {
+          contentStartsLine = true;
           const prefix = commentPrefix.trim().repeat(repeatPrefix ? depth + 1 : 1);
           content = `${prefix ? prefix + ' ' : ''}${block.name.trim()}\n${content}`;
         }
       } else {
         content = block.text.trim();
         if (!content) continue;
+        contentLastText = content;
         if (weights?.enabled)
           content = formatWeightedText(content, block.weight ?? 1, weights.syntax, weights);
       }
@@ -62,18 +84,30 @@ export function assemblePrompt(
             : previousType === 'tag' && block.type === 'tag'
               ? ' '
               : '\n';
-        output +=
+        let joiner =
           separator !== undefined
             ? separator
             : (weights?.enabled && weights.syntax === 'section' ? '' : separatorAfter(output)) +
               whitespace;
+        if (
+          separatorRules.punctuationOverrides &&
+          hasEndingSign(lastText, separatorRules.endingSigns)
+        )
+          joiner = joiner.replace(/\S/gu, '');
+        if (contentStartsLine || endsLine) {
+          if (!/[\r\n][ \t]*$/.test(joiner)) joiner = joiner.replace(/[ \t]+$/, '') + '\n';
+        }
+        output += joiner;
       }
+      if (!output) startsLine = contentStartsLine;
       output += content;
+      lastText = contentLastText;
+      endsLine = contentEndsLine;
       previousType = block.type;
     }
-    return output;
+    return { text: output, lastText, startsLine, endsLine };
   }
-  return renderBlocks(document.blocks, 0);
+  return renderBlocks(document.blocks, 0).text;
 }
 
 // Validate and copy input instead of trusting JSON's shape. v1 groups migrate in place

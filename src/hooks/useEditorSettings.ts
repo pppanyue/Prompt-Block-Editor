@@ -1,3 +1,8 @@
+import {
+  defaultSeparatorRules,
+  parseSeparatorRules,
+  type SeparatorRules,
+} from '../core/separators';
 import { defaultWeights, parseWeightSettings, type WeightSettings } from '../core/weights';
 import { useEffect, useState } from 'react';
 import { type Block } from '../core/document';
@@ -5,6 +10,7 @@ import { type Block } from '../core/document';
 export type EditorSettings = {
   weights: WeightSettings;
   separator: string;
+  separatorRules: SeparatorRules;
   commentPrefix: string;
   repeatPrefix: boolean;
   twoColumns: boolean;
@@ -15,6 +21,7 @@ export type EditorSettings = {
 const defaults: EditorSettings = {
   weights: defaultWeights,
   separator: ', ',
+  separatorRules: defaultSeparatorRules,
   commentPrefix: '#',
   repeatPrefix: true,
   twoColumns: false,
@@ -28,6 +35,7 @@ function loadSettings(): EditorSettings {
     const value = JSON.parse(localStorage.getItem(storageKey) || 'null');
     return {
       weights: parseWeightSettings(value?.weights),
+      separatorRules: parseSeparatorRules(value?.separatorRules),
       separator: typeof value?.separator === 'string' ? value.separator : ', ',
       commentPrefix:
         typeof value?.commentPrefix === 'string' ? value.commentPrefix : defaults.commentPrefix,

@@ -56,6 +56,7 @@ export default function App() {
           <PromptPreview
             document={document}
             separator={preferences.settings.separator}
+            separatorRules={preferences.settings.separatorRules}
             weights={preferences.settings.weights}
             onStatus={editor.setStatus}
             commentPrefix={preferences.settings.commentPrefix}

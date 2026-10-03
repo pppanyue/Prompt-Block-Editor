@@ -15,6 +15,8 @@ export function SettingsPanel({ settings, onChange, onSetCurrentMovement }: Sett
       <div className="settings-content">
         <SeparatorSettings
           value={settings.separator}
+          rules={settings.separatorRules}
+          onRulesChange={(separatorRules) => onChange({ ...settings, separatorRules })}
           onChange={(separator) => onChange({ ...settings, separator })}
         />
         <WeightSettingsPanel
