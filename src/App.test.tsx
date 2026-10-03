@@ -68,3 +68,18 @@ it('keeps edits, format, movement visibility, undo/redo and preview mode scoped 
   fireEvent.click(activePanel().getByRole('button', { name: 'Redo' }));
   expect(preview()).toBe('blur');
 });
+it('duplicates groups and tabs through their controls without sharing history', () => {
+  render(<App />);
+  fireEvent.click(activePanel().getByRole('button', { name: 'Duplicate Subject & setting' }));
+  expect(activePanel().getByDisplayValue('Subject & setting (copy)')).toBeTruthy();
+  fireEvent.click(activePanel().getByRole('button', { name: 'Undo' }));
+  expect(activePanel().queryByDisplayValue('Subject & setting (copy)')).toBeNull();
+  fireEvent.click(activePanel().getByRole('button', { name: 'Duplicate tab' }));
+  expect(
+    screen.getByRole('tab', { name: 'A quiet morning (copy)' }).getAttribute('aria-selected'),
+  ).toBe('true');
+  expect((activePanel().getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(
+    true,
+  );
+  expect(activePanel().getByLabelText('Description text')).toBeTruthy();
+});

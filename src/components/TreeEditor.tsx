@@ -28,6 +28,7 @@ export type TreeEditorProps = {
   onUpdate: (id: string, patch: BlockPatch) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, parentId: string | null, index: number) => void;
+  onDuplicate: (id: string) => void;
   onUngroup: (id: string) => void;
 };
 
@@ -232,6 +233,7 @@ function BlockList(props: BlockListProps) {
                 movementControlsToggle={movementControlsToggle}
                 onUpdate={(patch) => props.onUpdate(block.id, patch)}
                 onRemove={() => props.onRemove(block.id)}
+                onDuplicate={() => props.onDuplicate(block.id)}
                 onUngroup={() => props.onUngroup(block.id)}
               >
                 {block.collapsed ? (

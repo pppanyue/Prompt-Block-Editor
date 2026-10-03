@@ -18,6 +18,7 @@ it('toggles group add rows independently and creates elements from the dropdown'
     onUpdate: vi.fn(),
     onRemove: vi.fn(),
     onMove: vi.fn(),
+    onDuplicate: vi.fn(),
     onUngroup: vi.fn(),
   };
   const { rerender } = render(<TreeEditor {...props} />);

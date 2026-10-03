@@ -17,6 +17,7 @@ type Props = {
   settings: EditorSettings;
   movementVisibility: Record<string, boolean>;
   onToggleMovement: (id: string) => void;
+  onDuplicate: () => void;
   onChange: (patch: Partial<Omit<PromptTabData, 'id'>>) => void;
 };
 export function PromptTab({
@@ -27,6 +28,7 @@ export function PromptTab({
   movementVisibility,
   onToggleMovement,
   onChange,
+  onDuplicate,
 }: Props) {
   const editor = usePromptDocument({
     initialDocument: prompt.document,
@@ -55,6 +57,7 @@ export function PromptTab({
         onUndo={editor.undo}
         onRedo={editor.redo}
         onImport={editor.importDocument}
+        onDuplicate={onDuplicate}
         onExport={() =>
           downloadJson(
             { ...editor.document, outputSettings: prompt.output },
@@ -86,6 +89,7 @@ export function PromptTab({
                 onRemove={editor.removeBlock}
                 onMove={editor.moveBlock}
                 onUngroup={editor.ungroupBlock}
+                onDuplicate={editor.duplicateGroup}
               />
             </div>
           }

@@ -9,6 +9,7 @@ type DocumentToolbarProps = {
   onUndo: () => void;
   onRedo: () => void;
   onImport: (file: File) => Promise<void>;
+  onDuplicate: () => void;
   onExport: () => void;
 };
 
@@ -22,6 +23,7 @@ export function DocumentToolbar({
   onRedo,
   onImport,
   onExport,
+  onDuplicate,
 }: DocumentToolbarProps) {
   const titleId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -66,6 +68,7 @@ export function DocumentToolbar({
           >
             <span aria-hidden="true">↷</span>
           </button>
+          <button onClick={onDuplicate}>Duplicate tab</button>
           <button onClick={() => fileInput.current?.click()}>Import JSON</button>
           <button onClick={onExport}>Export JSON</button>
         </div>

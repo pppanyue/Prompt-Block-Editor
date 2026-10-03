@@ -9,6 +9,7 @@ type GroupEditorProps = {
   inheritedDisabled: boolean;
   onUpdate: (patch: BlockPatch) => void;
   onRemove: () => void;
+  onDuplicate: () => void;
   onUngroup: () => void;
   movementControls: ReactNode;
   movementControlsToggle: ReactNode;
@@ -22,6 +23,7 @@ export function GroupEditor({
   onUpdate,
   onRemove,
   onUngroup,
+  onDuplicate,
   movementControls,
   movementControlsToggle,
   addElementControl,
@@ -45,6 +47,13 @@ export function GroupEditor({
           />
           {addElementControl}
           {movementControlsToggle}
+          <button
+            title="Duplicate group"
+            aria-label={`Duplicate ${group.name}`}
+            onClick={onDuplicate}
+          >
+            <GroupToolbarIcon name="duplicate" />
+          </button>
           <button
             aria-label={`${group.collapsed ? 'Expand' : 'Collapse'} ${group.name}`}
             title={group.collapsed ? 'Expand group' : 'Collapse group'}

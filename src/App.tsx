@@ -71,6 +71,7 @@ export default function App() {
           <PromptTab
             key={prompt.id}
             prompt={prompt}
+            onDuplicate={() => workspace.duplicatePrompt(prompt.id)}
             saveStatus={workspace.status}
             active={prompt.id === workflow.activePromptId && !prompt.archived}
             settings={preferences.settings}

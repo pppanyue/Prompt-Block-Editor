@@ -1,3 +1,4 @@
+import { cloneBlock, copyName } from './clone';
 import { type Block, type BlockPatch } from './document';
 
 export function findBlock(blocks: Block[], id: string): Block | undefined {
@@ -116,4 +117,19 @@ export function summarizeBlocks(blocks: Block[]): string {
   }
   visit(blocks);
   return `${groups} ${groups === 1 ? 'group' : 'groups'} · ${texts} text ${texts === 1 ? 'block' : 'blocks'}`;
+}
+
+export function duplicateGroup(blocks: Block[], id: string): Block[] {
+  const original = findBlock(blocks, id);
+  const position = locate(blocks, id);
+  if (original?.type !== 'group' || !position) return blocks;
+  const parent = position.parentId === null ? null : findBlock(blocks, position.parentId);
+  const siblings = parent?.type === 'group' ? parent.blocks : blocks;
+  const copy = cloneBlock(original);
+  if (copy.type !== 'group') return blocks;
+  copy.name = copyName(
+    original.name,
+    siblings.filter((item) => item.type === 'group').map((item) => item.name),
+  );
+  return insertBlock(blocks, position.parentId, position.index + 1, copy);
 }

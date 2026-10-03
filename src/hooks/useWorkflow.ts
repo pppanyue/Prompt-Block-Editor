@@ -1,3 +1,4 @@
+import { cloneBlock, copyName } from '../core/clone';
 import { useEffect, useState } from 'react';
 import { loadWorkflow, newPrompt, WORKFLOW_KEY, type PromptTabData } from '../core/workflow';
 import { downloadJson } from '../core/download';
@@ -31,6 +32,29 @@ export function useWorkflow() {
       return { ...previous, activePromptId: prompt.id, prompts: [...previous.prompts, prompt] };
     });
   }
+  function duplicatePrompt(id: string) {
+    setWorkflow((previous) => {
+      const index = previous.prompts.findIndex((prompt) => prompt.id === id);
+      if (index < 0) return previous;
+      const source = previous.prompts[index];
+      const copy = {
+        ...structuredClone(source),
+        id: crypto.randomUUID(),
+        archived: false,
+        document: {
+          ...source.document,
+          title: copyName(
+            source.document.title,
+            previous.prompts.map((prompt) => prompt.document.title),
+          ),
+          blocks: source.document.blocks.map(cloneBlock),
+        },
+      };
+      const prompts = [...previous.prompts];
+      prompts.splice(index + 1, 0, copy);
+      return { ...previous, prompts, activePromptId: copy.id };
+    });
+  }
   function archivePrompt(id: string) {
     setWorkflow((previous) => {
       const remaining = previous.prompts.filter((prompt) => !prompt.archived && prompt.id !== id);
@@ -60,6 +84,7 @@ export function useWorkflow() {
     setWorkflow,
     updatePrompt,
     addPrompt,
+    duplicatePrompt,
     archivePrompt,
     restorePrompt,
     selectPrompt: (id: string) => setWorkflow((previous) => ({ ...previous, activePromptId: id })),

@@ -133,6 +133,11 @@ export function usePromptDocument(managed?: ManagedDocument) {
     if (blocks !== document.blocks) edit({ ...document, blocks });
   }
 
+  function duplicateGroup(blockId: string) {
+    const blocks = tree.duplicateGroup(document.blocks, blockId);
+    if (blocks !== document.blocks) edit({ ...document, blocks });
+  }
+
   function ungroupBlock(blockId: string) {
     if (tree.findBlock(document.blocks, blockId)?.type !== 'group') return;
     edit({ ...document, blocks: tree.ungroupBlock(document.blocks, blockId) });
@@ -170,6 +175,7 @@ export function usePromptDocument(managed?: ManagedDocument) {
     removeBlock,
     moveBlock,
     ungroupBlock,
+    duplicateGroup,
     importDocument,
     exportDocument,
   };
