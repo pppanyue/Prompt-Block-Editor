@@ -1,9 +1,12 @@
+import { WeightControl } from './WeightControl';
+import { type WeightSettings } from '../core/weights';
 import { type ReactNode } from 'react';
 import { type TextBlock } from '../core/document';
 import { SortableItem } from './SortableItem';
 
 type BlockEditorProps = {
   block: TextBlock;
+  weights?: WeightSettings;
   onUpdate: (patch: Partial<TextBlock>) => void;
   onRemove: () => void;
   inheritedDisabled: boolean;
@@ -13,6 +16,7 @@ type BlockEditorProps = {
 
 export function BlockEditor({
   block,
+  weights,
   onUpdate,
   onRemove,
   inheritedDisabled,
@@ -50,6 +54,13 @@ export function BlockEditor({
             placeholder="Describe your scene…"
             value={block.text}
             onChange={(event) => onUpdate({ text: event.target.value })}
+          />
+        )}
+        {weights?.enabled && (
+          <WeightControl
+            value={block.weight ?? 1}
+            increment={weights.increment}
+            onChange={(weight) => onUpdate({ weight })}
           />
         )}
         {movementControls}

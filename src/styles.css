@@ -570,3 +570,22 @@ footer {
 .group-header > input[type='checkbox'] {
   flex-shrink: 0;
 }
+
+.weight-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #7a877d;
+}
+.weight-control button {
+  padding: 3px 7px;
+}
+.block .weight-control input[type='number'] {
+  width: 65px;
+  border: 1px solid #d9ded7;
+  border-radius: 5px;
+  padding: 3px 5px;
+  background: #fff;
+}

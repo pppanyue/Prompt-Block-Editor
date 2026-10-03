@@ -41,6 +41,7 @@ export default function App() {
         <div className="workspace">
           <TreeEditor
             blocks={document.blocks}
+            weights={preferences.settings.weights}
             twoColumns={preferences.settings.twoColumns}
             layoutOrder={preferences.settings.layoutOrder}
             groupAddControl={preferences.settings.groupAddControl}
@@ -54,6 +55,7 @@ export default function App() {
           />
           <PromptPreview
             document={document}
+            weights={preferences.settings.weights}
             onStatus={editor.setStatus}
             commentPrefix={preferences.settings.commentPrefix}
             repeatPrefix={preferences.settings.repeatPrefix}

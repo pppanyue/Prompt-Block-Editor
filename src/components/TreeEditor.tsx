@@ -1,3 +1,4 @@
+import { type WeightSettings } from '../core/weights';
 import { GroupToolbarIcon } from './GroupToolbarIcon';
 import { useState } from 'react';
 import {
@@ -17,6 +18,7 @@ import { DropSlot } from './SortableItem';
 
 export type TreeEditorProps = {
   blocks: Block[];
+  weights?: WeightSettings;
   twoColumns: boolean;
   layoutOrder: 'rows' | 'columns';
   groupAddControl: 'toggle' | 'dropdown';
@@ -257,6 +259,7 @@ function BlockList(props: BlockListProps) {
             ) : (
               <BlockEditor
                 block={block}
+                weights={props.weights}
                 movementControls={movementVisible ? movementControls : null}
                 movementControlsToggle={movementControlsToggle}
                 inheritedDisabled={inheritedDisabled}

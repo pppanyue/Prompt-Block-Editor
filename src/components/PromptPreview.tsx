@@ -1,8 +1,10 @@
+import { type WeightSettings } from '../core/weights';
 import { useState } from 'react';
 import { assemblePrompt, type PromptDocument } from '../core/document';
 
 type PromptPreviewProps = {
   document: PromptDocument;
+  weights: WeightSettings;
   commentPrefix: string;
   repeatPrefix: boolean;
   onStatus: (message: string) => void;
@@ -10,12 +12,13 @@ type PromptPreviewProps = {
 
 export function PromptPreview({
   document,
+  weights,
   onStatus,
   commentPrefix,
   repeatPrefix,
 }: PromptPreviewProps) {
   const [annotated, setAnnotated] = useState(false);
-  const output = assemblePrompt(document, annotated, commentPrefix, repeatPrefix);
+  const output = assemblePrompt(document, annotated, commentPrefix, repeatPrefix, weights);
 
   async function copyPrompt() {
     try {

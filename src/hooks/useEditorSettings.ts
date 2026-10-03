@@ -1,7 +1,9 @@
+import { defaultWeights, parseWeightSettings, type WeightSettings } from '../core/weights';
 import { useEffect, useState } from 'react';
 import { type Block } from '../core/document';
 
 export type EditorSettings = {
+  weights: WeightSettings;
   commentPrefix: string;
   repeatPrefix: boolean;
   twoColumns: boolean;
@@ -10,6 +12,7 @@ export type EditorSettings = {
   defaultMovement: Record<Block['type'], boolean>;
 };
 const defaults: EditorSettings = {
+  weights: defaultWeights,
   commentPrefix: '#',
   repeatPrefix: true,
   twoColumns: false,
@@ -22,6 +25,7 @@ function loadSettings(): EditorSettings {
   try {
     const value = JSON.parse(localStorage.getItem(storageKey) || 'null');
     return {
+      weights: parseWeightSettings(value?.weights),
       commentPrefix:
         typeof value?.commentPrefix === 'string' ? value.commentPrefix : defaults.commentPrefix,
       repeatPrefix:

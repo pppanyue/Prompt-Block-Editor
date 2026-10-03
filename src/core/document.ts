@@ -1,7 +1,9 @@
+import { formatWeightedText, validWeight, type WeightSettings } from './weights';
 export type TextBlock = {
   id: string;
   type: 'tag' | 'description';
   text: string;
+  weight?: number;
   enabled: boolean;
 };
 
@@ -18,7 +20,8 @@ export type Group = {
 export type Block = TextBlock | Group;
 export type PromptDocument = { version: 2; title: string; blocks: Block[] };
 export type BlockPatch = Partial<
-  Pick<TextBlock, 'text' | 'enabled'> & Pick<Group, 'name' | 'collapsed' | 'includeHeading'>
+  Pick<TextBlock, 'text' | 'enabled' | 'weight'> &
+    Pick<Group, 'name' | 'collapsed' | 'includeHeading'>
 >;
 
 function separatorAfter(text: string): string {
@@ -30,6 +33,7 @@ export function assemblePrompt(
   annotated = false,
   commentPrefix = '#',
   repeatPrefix = true,
+  weights?: WeightSettings,
 ): string {
   function renderBlocks(blocks: Block[], depth: number): string {
     let output = '';
@@ -47,6 +51,8 @@ export function assemblePrompt(
       } else {
         content = block.text.trim();
         if (!content) continue;
+        if (weights?.enabled)
+          content = formatWeightedText(content, block.weight ?? 1, weights.syntax);
       }
       if (output) {
         const whitespace =
@@ -55,7 +61,9 @@ export function assemblePrompt(
             : previousType === 'tag' && block.type === 'tag'
               ? ' '
               : '\n';
-        output += separatorAfter(output) + whitespace;
+        output +=
+          (weights?.enabled && weights.syntax === 'section' ? '' : separatorAfter(output)) +
+          whitespace;
       }
       output += content;
       previousType = block.type;
@@ -116,7 +124,14 @@ export function parseDocument(value: unknown): PromptDocument {
     if ((item.type !== 'tag' && item.type !== 'description') || typeof item.text !== 'string') {
       throw new Error('Invalid text block in document.');
     }
-    return { ...base, type: item.type, text: item.text };
+    if (item.weight !== undefined && !validWeight(item.weight))
+      throw new Error('Invalid block weight: expected a number from 0 to 100.');
+    return {
+      ...base,
+      type: item.type,
+      text: item.text,
+      ...(item.weight === undefined ? {} : { weight: item.weight }),
+    };
   }
   return {
     version: 2,

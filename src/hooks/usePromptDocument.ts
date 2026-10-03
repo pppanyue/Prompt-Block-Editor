@@ -97,7 +97,7 @@ export function usePromptDocument() {
             includeHeading: true,
             blocks: [],
           }
-        : { ...base, type, text: '' };
+        : { ...base, type, text: '', weight: 1 };
     const siblings = parent?.type === 'group' ? parent.blocks : document.blocks;
     edit({
       ...document,

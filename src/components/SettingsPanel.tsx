@@ -1,3 +1,4 @@
+import { WeightSettingsPanel } from './WeightSettingsPanel';
 import { type Block } from '../core/document';
 import { type EditorSettings } from '../hooks/useEditorSettings';
 
@@ -11,6 +12,10 @@ export function SettingsPanel({ settings, onChange, onSetCurrentMovement }: Sett
     <details className="settings-panel">
       <summary>Settings</summary>
       <div className="settings-content">
+        <WeightSettingsPanel
+          settings={settings.weights}
+          onChange={(weights) => onChange({ ...settings, weights })}
+        />
         <fieldset>
           <legend>Group names in annotated output</legend>
           <label>
