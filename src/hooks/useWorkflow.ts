@@ -1,3 +1,5 @@
+import { type PromptDocument } from '../core/document';
+import { type OutputSettings } from '../core/workflow';
 import { cloneBlock, copyName } from '../core/clone';
 import { useEffect, useState } from 'react';
 import { loadWorkflow, newPrompt, WORKFLOW_KEY, type PromptTabData } from '../core/workflow';
@@ -84,6 +86,18 @@ export function useWorkflow() {
     setWorkflow,
     updatePrompt,
     addPrompt,
+    importPrompt: (document: PromptDocument, output: OutputSettings) =>
+      setWorkflow((previous) => {
+        const prompt = {
+          ...newPrompt(output),
+          document: structuredClone(document),
+          annotated: true,
+        };
+        const prompts = [...previous.prompts];
+        const index = prompts.findIndex((item) => item.id === previous.activePromptId);
+        prompts.splice(index + 1, 0, prompt);
+        return { ...previous, prompts, activePromptId: prompt.id };
+      }),
     duplicatePrompt,
     archivePrompt,
     restorePrompt,

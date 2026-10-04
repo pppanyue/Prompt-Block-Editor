@@ -3,11 +3,19 @@ import { type Workflow } from '../core/workflow';
 type Props = {
   workflow: Workflow;
   onSelect: (id: string) => void;
+  onImportText: () => void;
   onAdd: () => void;
   onArchive: (id: string) => void;
   onRestore: (id: string) => void;
 };
-export function WorkflowTabs({ workflow, onSelect, onAdd, onArchive, onRestore }: Props) {
+export function WorkflowTabs({
+  workflow,
+  onSelect,
+  onAdd,
+  onImportText,
+  onArchive,
+  onRestore,
+}: Props) {
   const open = workflow.prompts.filter((prompt) => !prompt.archived);
   const archived = workflow.prompts.filter((prompt) => prompt.archived);
   return (
@@ -54,6 +62,7 @@ export function WorkflowTabs({ workflow, onSelect, onAdd, onArchive, onRestore }
         ))}
       </div>
       <button onClick={onAdd}>+ Prompt</button>
+      <button onClick={onImportText}>Import text</button>
       {archived.length > 0 && (
         <select
           aria-label="Restore archived prompt"

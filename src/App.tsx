@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { TextImportDialog } from './components/TextImportDialog';
 import { type Block } from './core/document';
 import { SettingsPanel } from './components/SettingsPanel';
 import { PromptTab } from './components/PromptTab';
@@ -16,6 +17,7 @@ function scopedBlocks(blocks: Block[], tabId: string): Block[] {
 }
 export default function App() {
   const workspace = useWorkflow();
+  const [importOpen, setImportOpen] = useState(false);
   const { workflow } = workspace;
   const blocks = useMemo(
     () => workflow.prompts.flatMap((prompt) => scopedBlocks(prompt.document.blocks, prompt.id)),
@@ -64,6 +66,7 @@ export default function App() {
           workflow={workflow}
           onSelect={workspace.selectPrompt}
           onAdd={workspace.addPrompt}
+          onImportText={() => setImportOpen(true)}
           onArchive={workspace.archivePrompt}
           onRestore={workspace.restorePrompt}
         />
@@ -85,6 +88,18 @@ export default function App() {
           />
         ))}
       </main>
+      {importOpen && (
+        <TextImportDialog
+          defaults={
+            workflow.prompts.find((prompt) => prompt.id === workflow.activePromptId)!.output
+          }
+          onClose={() => setImportOpen(false)}
+          onImport={(document, output) => {
+            workspace.importPrompt(document, output);
+            setImportOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

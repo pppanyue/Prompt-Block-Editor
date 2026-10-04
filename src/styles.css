@@ -1110,3 +1110,88 @@ main > footer {
     display: none;
   }
 }
+
+.text-import-dialog {
+  width: min(1000px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 1px solid #d9ded7;
+  border-radius: 12px;
+  padding: 20px;
+  color: inherit;
+  background: #fcfcf9;
+}
+.text-import-dialog::backdrop {
+  background: #18251d66;
+}
+.import-heading,
+.import-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.import-heading h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.import-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin: 16px 0;
+}
+.text-import-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  min-width: 0;
+}
+.text-import-dialog input,
+.text-import-dialog textarea,
+.text-import-dialog select {
+  padding: 8px;
+  border: 1px solid #d9ded7;
+  border-radius: 6px;
+  font: inherit;
+}
+.import-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.import-columns > * {
+  min-width: 0;
+}
+.import-columns textarea {
+  width: 100%;
+  resize: vertical;
+}
+.import-columns h3 {
+  margin-top: 0;
+  font-size: 14px;
+}
+.import-blocks {
+  padding-left: 20px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.import-blocks li {
+  margin: 6px 0;
+}
+.import-blocks small {
+  color: #778579;
+}
+.import-actions {
+  justify-content: flex-end;
+}
+@media (max-width: 650px) {
+  .import-columns {
+    grid-template-columns: 1fr;
+  }
+  .workflow-tabs {
+    flex-wrap: wrap;
+  }
+}
