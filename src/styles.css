@@ -632,6 +632,8 @@ footer {
 .prompt-tabs {
   display: flex;
   overflow-x: auto;
+  padding: 2px 2px 12px;
+  scrollbar-width: thin;
   gap: 6px;
   max-width: 100%;
 }
@@ -757,6 +759,7 @@ main > .settings-panel[open] {
   gap: 8px;
 }
 .workflow-tabs {
+  align-items: flex-start;
   flex-wrap: nowrap;
 }
 .prompt-tabs {
@@ -1210,6 +1213,7 @@ main > footer {
 }
 
 .tab-actions {
+  padding-top: 2px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
