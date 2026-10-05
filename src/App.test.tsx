@@ -100,3 +100,17 @@ it('reimports matching tab IDs with fresh document state and history', async () 
     true,
   );
 });
+it('reorders tabs with Alt+arrows without changing the selected prompt or history', () => {
+  render(<App />);
+  fireEvent.change(activePanel().getByLabelText('Tab name'), { target: { value: 'First' } });
+  fireEvent.click(screen.getByRole('button', { name: '+ Prompt' }));
+  const second = screen.getByRole('tab', { name: 'Prompt 2' });
+  fireEvent.keyDown(second, { key: 'ArrowLeft', altKey: true });
+  expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Prompt 2', 'First']);
+  expect(second.getAttribute('aria-selected')).toBe('true');
+  fireEvent.click(screen.getByRole('tab', { name: 'First' }));
+  fireEvent.click(activePanel().getByRole('button', { name: 'Undo' }));
+  expect((activePanel().getByLabelText('Tab name') as HTMLInputElement).value).toBe(
+    'A quiet morning',
+  );
+});

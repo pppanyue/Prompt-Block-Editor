@@ -96,3 +96,20 @@ it('leaves the current workflow and autosave unchanged on invalid import', async
   expect(result.current.status).toContain('Workflow import failed');
   expect(result.current.importRevision).toBe(0);
 });
+it('persists manual tab order while retaining selection and archived positions', () => {
+  const { result, unmount } = renderHook(useWorkflow);
+  const first = result.current.workflow.activePromptId;
+  act(() => result.current.addPrompt());
+  const archived = result.current.workflow.activePromptId;
+  act(() => result.current.addPrompt());
+  const last = result.current.workflow.activePromptId;
+  act(() => result.current.archivePrompt(archived));
+  act(() => result.current.reorderPrompt(last, first));
+  expect(result.current.workflow.prompts.map((p) => p.id)).toEqual([last, archived, first]);
+  expect(result.current.workflow.activePromptId).toBe(last);
+  act(() => result.current.reorderPrompt(archived, first));
+  expect(result.current.workflow.prompts.map((p) => p.id)).toEqual([last, archived, first]);
+  const saved = result.current.workflow;
+  unmount();
+  expect(renderHook(useWorkflow).result.current.workflow).toEqual(saved);
+});

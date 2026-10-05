@@ -120,6 +120,20 @@ export function useWorkflow() {
         prompts.splice(index + 1, 0, prompt);
         return { ...previous, prompts, activePromptId: prompt.id };
       }),
+    reorderPrompt: (id: string, overId: string) =>
+      setWorkflow((previous) => {
+        const open = previous.prompts.filter((prompt) => !prompt.archived);
+        const from = open.findIndex((prompt) => prompt.id === id);
+        const to = open.findIndex((prompt) => prompt.id === overId);
+        if (from < 0 || to < 0 || from === to) return previous;
+        const [moved] = open.splice(from, 1);
+        open.splice(to, 0, moved);
+        let index = 0;
+        return {
+          ...previous,
+          prompts: previous.prompts.map((prompt) => (prompt.archived ? prompt : open[index++])),
+        };
+      }),
     duplicatePrompt,
     archivePrompt,
     restorePrompt,

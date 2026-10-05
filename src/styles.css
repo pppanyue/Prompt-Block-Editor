@@ -1195,3 +1195,41 @@ main > footer {
     flex-wrap: wrap;
   }
 }
+
+.prompt-tab-label [role='tab'] {
+  cursor: grab;
+  touch-action: none;
+}
+.prompt-tab-label.tab-dragging {
+  z-index: 2;
+  opacity: 0.8;
+  box-shadow: 0 2px 8px #29372f33;
+}
+.tab-dragging [role='tab'] {
+  cursor: grabbing;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.tab-actions select {
+  max-width: 180px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #d9ded7;
+  border-radius: 7px;
+  color: inherit;
+  background: #fff;
+  font: inherit;
+}
+@media (max-width: 650px) {
+  .tab-actions {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+}

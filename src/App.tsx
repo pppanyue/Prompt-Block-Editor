@@ -85,6 +85,7 @@ export default function App() {
         <WorkflowTabs
           workflow={workflow}
           onSelect={workspace.selectPrompt}
+          onReorder={workspace.reorderPrompt}
           onAdd={workspace.addPrompt}
           onImportText={() => setImportOpen(true)}
           onArchive={workspace.archivePrompt}
