@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import { WORKFLOW_KEY } from './core/workflow';
@@ -82,4 +82,21 @@ it('duplicates groups and tabs through their controls without sharing history', 
     true,
   );
   expect(activePanel().getByLabelText('Description text')).toBeTruthy();
+});
+
+it('reimports matching tab IDs with fresh document state and history', async () => {
+  render(<App />);
+  const saved = JSON.parse(localStorage.getItem(WORKFLOW_KEY)!);
+  saved.prompts[0].document.title = 'Reimported title';
+  const file = new File([], 'example.workflow.json', { type: 'application/json' });
+  Object.defineProperty(file, 'text', { value: async () => JSON.stringify(saved) });
+  fireEvent.change(screen.getByLabelText('Import workflow file'), { target: { files: [file] } });
+  await waitFor(() =>
+    expect((activePanel().getByLabelText('Tab name') as HTMLInputElement).value).toBe(
+      'Reimported title',
+    ),
+  );
+  expect((activePanel().getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(
+    true,
+  );
 });

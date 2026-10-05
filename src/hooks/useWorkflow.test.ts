@@ -71,3 +71,28 @@ it('rejects duplicate tab IDs and refuses to archive the final open tab', () => 
     }),
   ).toThrow('duplicate');
 });
+it('imports exported workflows, persists the selection and restores them on reopening', async () => {
+  const { result, unmount } = renderHook(useWorkflow);
+  act(() => result.current.addPrompt());
+  const imported = structuredClone(result.current.workflow);
+  imported.name = 'Imported workflow';
+  imported.prompts[1].document.title = 'Imported second';
+  await act(() =>
+    result.current.importWorkflow({ text: async () => JSON.stringify(imported) } as File),
+  );
+  expect(result.current.workflow).toEqual(imported);
+  expect(result.current.importRevision).toBe(1);
+  unmount();
+  const reopened = renderHook(useWorkflow);
+  expect(reopened.result.current.workflow).toEqual(imported);
+});
+it('leaves the current workflow and autosave unchanged on invalid import', async () => {
+  const { result } = renderHook(useWorkflow);
+  const before = result.current.workflow;
+  const saved = localStorage.getItem(WORKFLOW_KEY);
+  await act(() => result.current.importWorkflow({ text: async () => '{"version":99}' } as File));
+  expect(result.current.workflow).toBe(before);
+  expect(localStorage.getItem(WORKFLOW_KEY)).toBe(saved);
+  expect(result.current.status).toContain('Workflow import failed');
+  expect(result.current.importRevision).toBe(0);
+});

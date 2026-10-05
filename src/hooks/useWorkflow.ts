@@ -2,12 +2,19 @@ import { type PromptDocument } from '../core/document';
 import { type OutputSettings } from '../core/workflow';
 import { cloneBlock, copyName } from '../core/clone';
 import { useEffect, useState } from 'react';
-import { loadWorkflow, newPrompt, WORKFLOW_KEY, type PromptTabData } from '../core/workflow';
+import {
+  loadWorkflow,
+  newPrompt,
+  parseWorkflow,
+  WORKFLOW_KEY,
+  type PromptTabData,
+} from '../core/workflow';
 import { downloadJson } from '../core/download';
 
 export function useWorkflow() {
   const [initial] = useState(loadWorkflow);
   const [workflow, setWorkflow] = useState(initial.workflow);
+  const [importRevision, setImportRevision] = useState(0);
   const [status, setStatus] = useState(initial.error ?? 'Workflow loaded on this device');
   const [saveBlocked, setSaveBlocked] = useState(Boolean(initial.error));
   useEffect(() => {
@@ -19,6 +26,19 @@ export function useWorkflow() {
       setStatus('Autosave failed. Export the workflow to keep your changes.');
     }
   }, [workflow, saveBlocked]);
+  async function importWorkflow(file: File) {
+    try {
+      const imported = parseWorkflow(JSON.parse(await file.text()));
+      setWorkflow(imported);
+      // Even a reimport with identical IDs must rebuild document histories.
+      setImportRevision((revision) => revision + 1);
+      setSaveBlocked(false);
+    } catch (error) {
+      setStatus(
+        'Workflow import failed: ' + (error instanceof Error ? error.message : 'Invalid file.'),
+      );
+    }
+  }
   function updatePrompt(id: string, patch: Partial<Omit<PromptTabData, 'id'>>) {
     setWorkflow((previous) => ({
       ...previous,
@@ -81,6 +101,8 @@ export function useWorkflow() {
   }
   return {
     workflow,
+    importWorkflow,
+    importRevision,
     status,
     saveBlocked,
     setWorkflow,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { TextImportDialog } from './components/TextImportDialog';
 import { type Block } from './core/document';
 import { SettingsPanel } from './components/SettingsPanel';
@@ -17,6 +17,7 @@ function scopedBlocks(blocks: Block[], tabId: string): Block[] {
 }
 export default function App() {
   const workspace = useWorkflow();
+  const workflowFile = useRef<HTMLInputElement>(null);
   const [importOpen, setImportOpen] = useState(false);
   const { workflow } = workspace;
   const blocks = useMemo(
@@ -44,6 +45,25 @@ export default function App() {
                 onChange={(event) => workspace.renameWorkflow(event.target.value)}
               />
             </label>
+            <button
+              title="Load a workflow JSON file, replacing the current workspace"
+              onClick={() => workflowFile.current?.click()}
+            >
+              Import workflow
+            </button>
+            <input
+              ref={workflowFile}
+              type="file"
+              accept=".json,application/json"
+              aria-label="Import workflow file"
+              hidden
+              onChange={async (event) => {
+                const input = event.currentTarget;
+                const file = input.files?.[0];
+                if (file) await workspace.importWorkflow(file);
+                input.value = '';
+              }}
+            />
             <button onClick={workspace.exportWorkflow}>Export workflow</button>
           </div>
           <SettingsPanel
@@ -72,7 +92,7 @@ export default function App() {
         />
         {workflow.prompts.map((prompt) => (
           <PromptTab
-            key={prompt.id}
+            key={`${workspace.importRevision}/${prompt.id}`}
             prompt={prompt}
             onDuplicate={() => workspace.duplicatePrompt(prompt.id)}
             saveStatus={workspace.status}
