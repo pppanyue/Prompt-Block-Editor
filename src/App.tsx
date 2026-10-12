@@ -46,6 +46,12 @@ export default function App() {
               />
             </label>
             <button
+              title="Start a blank workflow, replacing the current workspace"
+              onClick={workspace.createWorkflow}
+            >
+              New workflow
+            </button>
+            <button
               title="Load a workflow JSON file, replacing the current workspace"
               onClick={() => workflowFile.current?.click()}
             >

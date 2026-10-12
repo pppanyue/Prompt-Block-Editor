@@ -4,6 +4,7 @@ import { cloneBlock, copyName } from '../core/clone';
 import { useEffect, useState } from 'react';
 import {
   loadWorkflow,
+  migrateWorkflow,
   newPrompt,
   parseWorkflow,
   WORKFLOW_KEY,
@@ -101,6 +102,12 @@ export function useWorkflow() {
   }
   return {
     workflow,
+    createWorkflow: () => {
+      const blank = migrateWorkflow({ version: 2, title: 'Prompt 1', blocks: [] }, undefined);
+      setWorkflow({ ...blank, name: 'Untitled workflow' });
+      setImportRevision((revision) => revision + 1);
+      setSaveBlocked(false);
+    },
     importWorkflow,
     importRevision,
     status,

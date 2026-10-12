@@ -114,3 +114,21 @@ it('reorders tabs with Alt+arrows without changing the selected prompt or histor
     'A quiet morning',
   );
 });
+
+it('starts a blank workflow with one fresh tab and saves it locally', () => {
+  render(<App />);
+  const previous = JSON.parse(localStorage.getItem(WORKFLOW_KEY)!);
+  fireEvent.click(screen.getByRole('button', { name: 'New workflow' }));
+  expect((screen.getByLabelText('Workflow name') as HTMLInputElement).value).toBe(
+    'Untitled workflow',
+  );
+  expect(screen.getAllByRole('tab')).toHaveLength(1);
+  expect(preview()).toBe('');
+  expect((activePanel().getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(
+    true,
+  );
+  const saved = JSON.parse(localStorage.getItem(WORKFLOW_KEY)!);
+  expect(saved.id).not.toBe(previous.id);
+  expect(saved.prompts[0].document.blocks).toEqual([]);
+  expect(saved.prompts[0].id).not.toBe(previous.prompts[0].id);
+});
